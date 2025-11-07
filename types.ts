@@ -14,7 +14,7 @@ export interface Gig {
   jobStatus: string;
 }
 
-// FIX: Add missing GigDetails and GigPlan types for geminiService.
+// FIX: Added GigDetails and GigPlan interfaces to resolve import errors in geminiService.ts.
 export interface GigDetails {
   artistName: string;
   venue: string;
