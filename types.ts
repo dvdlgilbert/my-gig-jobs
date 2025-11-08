@@ -19,5 +19,3 @@ export interface GigPlan {
   banter: string[];
   socialMediaPost: string;
 }
-
-
