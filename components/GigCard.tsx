@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Gig } from '../types';
 import PhoneIcon from './icons/PhoneIcon';
@@ -35,7 +36,8 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit }) => {
                 <InfoItem label="Time" value={gig.time} />
                 <InfoItem label="Address" value={gig.clientAddress} className="col-span-2" />
                 <InfoItem label="Cost" value={gig.jobCost ? `$${gig.jobCost}`: ''} />
-                <InfoItem label="Hours" value={gig.hoursWorked} />
+                {/* FIX: Converted `gig.hoursWorked` to a string to match the `InfoItem` component's `value` prop type. */}
+                <InfoItem label="Hours" value={gig.hoursWorked?.toString()} />
                 <InfoItem label="Location" value={gig.jobLocation} />
                 <InfoItem label="Status" value={gig.jobStatus} />
             </div>
@@ -51,7 +53,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit }) => {
             <a href={`mailto:${gig.clientEmail}`} className="text-black p-2 rounded-full hover:bg-purple-600" aria-label="Email client">
                 <EmailIcon className="h-5 w-5" />
             </a>
-            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gig.jobLocation || gig.clientAddress)}`} target="_blank" rel="noopener noreferrer" className="text-black p-2 rounded-full hover:bg-purple-600" aria-label="Navigate to location">
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gig.jobLocation || gig.clientAddress || '')}`} target="_blank" rel="noopener noreferrer" className="text-black p-2 rounded-full hover:bg-purple-600" aria-label="Navigate to location">
                 <LocationIcon className="h-5 w-5" />
             </a>
         </div>
