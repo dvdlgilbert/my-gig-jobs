@@ -6,29 +6,32 @@ interface GigFormProps {
   gig: Gig | null;
   onSave: (gig: Gig) => void;
   onCancel: () => void;
+  onDelete: (id: string) => void;
 }
 
-const initialGigState: Omit<Gig, 'id' | 'dateApplied'> & { dateApplied: string } = {
-  company: '',
-  role: '',
-  status: 'Wishlist',
-  dateApplied: new Date().toISOString().split('T')[0],
-  contactName: '',
-  contactEmail: '',
-  contactPhone: '',
-  location: '',
-  notes: '',
-  url: ''
+const initialGigState: Omit<Gig, 'id'> = {
+  jobTitle: '',
+  description: '',
+  clientName: '',
+  clientPhone: '',
+  clientEmail: '',
+  clientAddress: '',
+  date: new Date().toISOString().split('T')[0],
+  time: new Date().toTimeString().slice(0, 5),
+  jobCost: undefined,
+  hoursWorked: undefined,
+  jobSite: '',
+  jobStatus: 'Scheduled',
 };
 
-const GigForm: React.FC<GigFormProps> = ({ gig, onSave, onCancel }) => {
+const GigForm: React.FC<GigFormProps> = ({ gig, onSave, onCancel, onDelete }) => {
   const [formData, setFormData] = useState({ ...initialGigState });
 
   useEffect(() => {
     if (gig) {
       setFormData({
         ...gig,
-        dateApplied: new Date(gig.dateApplied).toISOString().split('T')[0],
+        date: new Date(gig.date).toISOString().split('T')[0],
       });
     } else {
       setFormData({ ...initialGigState });
@@ -36,88 +39,107 @@ const GigForm: React.FC<GigFormProps> = ({ gig, onSave, onCancel }) => {
   }, [gig]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    
+    if (type === 'number') {
+      const numValue = value === '' ? undefined : parseFloat(value);
+      setFormData(prev => ({ ...prev, [name]: numValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.company || !formData.role) return;
-
-    // Convert date string back to ISO string for storage
-    const gigToSave = {
-      ...formData,
-      id: gig?.id || crypto.randomUUID(), // Use existing id or generate a new one
-      dateApplied: new Date(formData.dateApplied).toISOString(),
+    if (!formData.jobTitle) {
+      alert('Job Title is required.');
+      return;
     };
-    onSave(gigToSave as Gig);
+
+    const gigToSave: Gig = {
+      ...formData,
+      id: gig?.id || crypto.randomUUID(),
+      date: new Date(formData.date).toISOString(),
+    };
+    onSave(gigToSave);
   };
   
-  const statusOptions: GigStatus[] = ['Wishlist', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
+  const statusOptions: GigStatus[] = ['Scheduled', 'Pending', 'Working', 'Complete'];
 
   return (
-    <div className="p-4 md:p-6">
-       <div className="flex items-center mb-6">
-        <button onClick={onCancel} className="p-2 rounded-full hover:bg-gray-200 mr-4">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+      <header className="bg-brand-purple -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 mb-6 p-4 rounded-t-lg flex items-center">
+        <button onClick={onCancel} className="p-2 rounded-full hover:bg-white/20 text-white">
           <ArrowLeftIcon className="w-6 h-6" />
         </button>
-        <h1 className="text-3xl font-bold">{gig ? 'Edit Gig' : 'Add New Gig'}</h1>
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-white ml-4">{gig ? 'Update GiG' : 'Add New Gig'}</h1>
+      </header>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Job Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role *</label>
-            <input type="text" name="role" id="role" value={formData.role} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
-          <div>
-            <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company *</label>
-            <input type="text" name="company" id="company" value={formData.company} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
+          <InputField label="Job Title" name="jobTitle" value={formData.jobTitle} onChange={handleChange} required />
+          <InputField label="Date" name="date" type="date" value={formData.date} onChange={handleChange} required />
         </div>
+         <InputField label="Job Description" name="description" value={formData.description} onChange={handleChange} isTextArea />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField label="Time" name="time" type="time" value={formData.time} onChange={handleChange} required />
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
-            <select name="status" id="status" value={formData.status} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+            <label htmlFor="jobStatus" className="block text-sm font-medium text-gray-700">Job Status</label>
+            <select name="jobStatus" id="jobStatus" value={formData.jobStatus} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 focus:ring-brand-purple focus:border-brand-purple">
               {statusOptions.map(status => <option key={status} value={status}>{status}</option>)}
             </select>
           </div>
-          <div>
-            <label htmlFor="dateApplied" className="block text-sm font-medium text-gray-700">Date Applied *</label>
-            <input type="date" name="dateApplied" id="dateApplied" value={formData.dateApplied} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
         </div>
-         <div>
-            <label htmlFor="url" className="block text-sm font-medium text-gray-700">Job Posting URL</label>
-            <input type="url" name="url" id="url" value={formData.url || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
-          <input type="text" name="location" id="location" value={formData.location || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField label="Job Cost ($)" name="jobCost" type="number" value={formData.jobCost || ''} onChange={handleChange} />
+          <InputField label="Hours Worked" name="hoursWorked" type="number" value={formData.hoursWorked || ''} onChange={handleChange} />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 pt-4 border-t">Contact Info</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label htmlFor="contactName" className="block text-sm font-medium text-gray-700">Name</label>
-            <input type="text" name="contactName" id="contactName" value={formData.contactName || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
-          <div>
-            <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" name="contactEmail" id="contactEmail" value={formData.contactEmail || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
-          <div>
-            <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700">Phone</label>
-            <input type="tel" name="contactPhone" id="contactPhone" value={formData.contactPhone || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" />
-          </div>
+        
+        {/* Client Details */}
+        <h3 className="text-lg font-medium text-gray-900 pt-4 border-t">Client Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField label="Client Name" name="clientName" value={formData.clientName} onChange={handleChange} required />
+          <InputField label="Client Phone" name="clientPhone" type="tel" value={formData.clientPhone} onChange={handleChange} />
         </div>
-        <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
-          <textarea name="notes" id="notes" value={formData.notes || ''} onChange={handleChange} rows={5} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-        </div>
-        <div className="pt-5 flex justify-end space-x-3">
-          <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-medium">Cancel</button>
-          <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium">Save Gig</button>
+        <InputField label="Client Email" name="clientEmail" type="email" value={formData.clientEmail} onChange={handleChange} />
+        <InputField label="Address" name="clientAddress" value={formData.clientAddress} onChange={handleChange} isTextArea />
+        <InputField label="Job Site Location" name="jobSite" value={formData.jobSite} onChange={handleChange} isTextArea />
+
+        <div className="pt-5 flex justify-center space-x-4">
+           <button type="submit" className="px-10 py-3 bg-brand-purple text-white rounded-md hover:bg-purple-700 font-bold text-lg w-full md:w-auto">
+            {gig ? 'UPDATE GIG' : 'ADD GIG'}
+           </button>
+           {gig && (
+             <button type="button" onClick={() => onDelete(gig.id)} className="px-10 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 font-bold text-lg w-full md:w-auto">
+               Delete GiG
+             </button>
+           )}
         </div>
       </form>
+    </div>
+  );
+};
+
+// Helper component for form fields
+const InputField = ({ label, name, value, onChange, type = 'text', required = false, isTextArea = false }) => {
+  const commonProps = {
+    name,
+    id: name,
+    value,
+    onChange,
+    required,
+    className: "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 focus:ring-brand-purple focus:border-brand-purple",
+    placeholder: label
+  };
+  return (
+    <div>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}{required && ' *'}</label>
+      {isTextArea ? (
+        <textarea {...commonProps} rows={3}></textarea>
+      ) : (
+        <input type={type} {...commonProps} />
+      )}
     </div>
   );
 };
