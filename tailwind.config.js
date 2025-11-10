@@ -2,10 +2,16 @@
 export default {
   content: [
     "./index.html",
-    "./**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./App.tsx",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'brand-purple': '#6c2bd9',
+      }
+    },
   },
   plugins: [],
 }
