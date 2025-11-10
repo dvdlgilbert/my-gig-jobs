@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Gig } from './types';
 import { getGigs, saveGigs } from './services/storageService';
+// FIX: Fix module resolution error by using relative paths.
 import GigCard from './components/GigCard';
 import GigForm from './components/GigForm';
 import PlusIcon from './components/icons/PlusIcon';
