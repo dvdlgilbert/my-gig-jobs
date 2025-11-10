@@ -1,4 +1,5 @@
-import type { Gig } from '../types';
+// FIX: Fix module resolution error by adding file extension.
+import type { Gig } from '../types.ts';
 
 const GIGS_STORAGE_KEY = 'myGigsData';
 
