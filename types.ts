@@ -1,16 +1,22 @@
-export type Gig = {
-  id: number;
-  jobTitle: string;
-  jobDescription: string;
-  clientName: string;
-  clientPhone?: string;
-  clientEmail?: string;
-  clientAddress?: string;
-  date: string;
-  time?: string;
-  jobLocation?: string;
-  jobCost?: number;
-  hoursWorked?: number;
-  jobStatus: 'Planned' | 'Confirmed' | 'Completed' | 'Cancelled';
-};
+// types.ts
+
+export type GigStatus = 'Interested' | 'Applied' | 'Interviewing' | 'Offer' | 'Rejected' | 'Declined';
+
+export interface Contact {
+  name: string;
+  phone: string;
+  email: string;
+}
+
+export interface Gig {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  pay: string;
+  status: GigStatus;
+  contact: Contact;
+  notes: string;
+  dateApplied: string; // ISO string
+}
 
