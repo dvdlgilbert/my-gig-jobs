@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import type { Gig, GigStatus } from './types';
+import { useState, useEffect, useMemo } from 'react';
+import type { Gig } from './types';
 import { getGigs, saveGigs } from './services/storageService';
 import GigCard from './components/GigCard';
 import GigForm from './components/GigForm';
@@ -20,8 +20,7 @@ const App: React.FC = () => {
   }, []);
 
   const updateGigs = (newGigs: Gig[]) => {
-    // Sort gigs by date, most recent first, before saving and setting state
-    const sortedGigs = newGigs.sort((a, b) => new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime());
+    const sortedGigs = newGigs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setGigs(sortedGigs);
     saveGigs(sortedGigs);
   };
@@ -52,11 +51,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleUpdateStatus = (gigId: string, newStatus: GigStatus) => {
-    const newGigs = gigs.map(g => g.id === gigId ? { ...g, status: newStatus } : g);
-    updateGigs(newGigs);
-  };
-
   const handleAddNew = () => {
     setEditingGig(null);
     setView('form');
@@ -72,69 +66,76 @@ const App: React.FC = () => {
       return gigs;
     }
     return gigs.filter(gig => 
-      gig.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      gig.role.toLowerCase().includes(searchTerm.toLowerCase())
+      gig.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      gig.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [gigs, searchTerm]);
 
   return (
-    <div className="bg-gray-100 min-h-screen font-sans">
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">My Gig Jobs</h1>
-          {view === 'list' && (
-            <div className="flex items-center space-x-2">
+    <div className="bg-gray-50 min-h-screen font-sans flex flex-col">
+      {view === 'list' && (
+         <header className="bg-brand-purple shadow-md sticky top-0 z-10">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-white">My GiG Jobs</h1>
+            {gigs.length > 0 && (
               <div className="relative">
                  <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search by title or description"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border rounded-full w-40 md:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 pr-4 py-2 border rounded-full w-40 sm:w-56 text-sm focus:outline-none focus:ring-2 focus:ring-white"
                 />
                 <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              <button onClick={handleAddNew} className="bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 shadow">
-                <PlusIcon className="w-6 h-6" />
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
+            )}
+          </div>
+        </header>
+      )}
 
-      <main className="container mx-auto p-4">
+      <main className="container mx-auto p-4 flex-grow">
         {view === 'list' ? (
-          <div>
+          <>
             {filteredGigs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredGigs.map(gig => (
                   <GigCard 
                     key={gig.id} 
                     gig={gig} 
-                    onDelete={handleDeleteGig} 
-                    onUpdateStatus={handleUpdateStatus}
+                    onDelete={handleDeleteGig}
                     onEdit={handleEditGig}
                   />
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20">
+              <div className="text-center py-16 px-6">
                 <DatabaseIcon className="w-16 h-16 mx-auto text-gray-400" />
-                <h2 className="mt-4 text-2xl font-semibold text-gray-700">No Gigs Found</h2>
-                <p className="mt-2 text-gray-500">
-                  {searchTerm ? 'Try a different search term.' : 'Click the "+" button to add your first gig!'}
-                </p>
+                <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
+                   <p className="mt-2 text-gray-600 text-left">
+                     My GiGs is a standalone mobile application built to help freelancers, independent contractors, gig workers, and side-hustlers manage and track their work history, earnings, and client interactions. The application also provides convenient tools for communicating with clients via SMS, phone calls, and email, when permitted by the user.
+                   </p>
+                   <p className="mt-4 text-gray-600 text-left font-medium">
+                     My Gigs is a product of Gigs and Side-Hustle Technologies, LLC.
+                   </p>
+                </div>
               </div>
             )}
-          </div>
+            <button onClick={handleAddNew} className="fixed bottom-6 right-6 bg-brand-purple text-white p-4 rounded-full hover:bg-purple-700 shadow-lg transition-transform duration-200 hover:scale-110">
+              <PlusIcon className="w-8 h-8" />
+            </button>
+          </>
         ) : (
           <GigForm 
             gig={editingGig} 
             onSave={handleSaveGig} 
-            onCancel={handleCancelForm} 
+            onCancel={handleCancelForm}
+            onDelete={handleDeleteGig}
           />
         )}
       </main>
+      <footer className="w-full text-center py-4 text-gray-500 text-xs">
+        Copyright (c) 2025 - Gigs and Side-Hustle Technologies, llc
+      </footer>
     </div>
   );
 };
