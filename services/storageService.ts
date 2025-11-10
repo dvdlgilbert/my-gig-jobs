@@ -1,12 +1,15 @@
-// FIX: Fix module resolution error by adding file extension.
-import type { Gig } from '../types.ts';
+// FIX: Fix module resolution error by removing file extension.
+import type { Gig } from '../types';
 
 const GIGS_STORAGE_KEY = 'myGigsData';
 
 export const getGigs = (): Gig[] => {
   try {
     const gigsJson = localStorage.getItem(GIGS_STORAGE_KEY);
-    return gigsJson ? JSON.parse(gigsJson) : [];
+    const gigs = gigsJson ? JSON.parse(gigsJson) : [];
+    // Sort gigs by date, most recent first
+    // FIX: Replaced non-existent 'dateApplied' property with 'date' for sorting.
+    return gigs.sort((a: Gig, b: Gig) => new Date(b.date).getTime() - new Date(a.date).getTime());
   } catch (error) {
     console.error("Could not parse gigs from localStorage", error);
     return [];
