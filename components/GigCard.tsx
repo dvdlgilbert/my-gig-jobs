@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import type { Gig } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import type { Gig, GigStatus } from '../types';
 import MoreVertIcon from './icons/MoreVertIcon';
 import PhoneIcon from './icons/PhoneIcon';
 import EmailIcon from './icons/EmailIcon';
-import TextIcon from './icons/TextIcon';
 import LocationIcon from './icons/LocationIcon';
+import TextIcon from './icons/TextIcon';
 
 interface GigCardProps {
   gig: Gig;
   onEdit: (gig: Gig) => void;
-  onDelete: (id: string) => void;
+  onDelete: (gigId: string) => void;
 }
 
 const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete }) => {
@@ -28,87 +28,96 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete }) => {
     };
   }, []);
 
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Scheduled':
-        return 'bg-blue-100 text-blue-800';
-      case 'Working':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Complete':
-        return 'bg-green-100 text-green-800';
-      case 'Pending':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC', // To prevent off-by-one day errors
+    });
   };
 
-  const parts = gig.date.split('-');
-  const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; 
-  const day = parseInt(parts[2], 10);
-  const dateObj = new Date(year, month, day);
+  const formatTime = (timeString: string) => {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours, 10));
+    date.setMinutes(parseInt(minutes, 10));
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+  
+  const statusColors: Record<GigStatus, string> = {
+    Scheduled: 'bg-purple-100 text-purple-800',
+    Pending: 'bg-yellow-100 text-yellow-800',
+    Working: 'bg-blue-100 text-blue-800',
+    Complete: 'bg-green-100 text-green-800',
+  };
 
-  const formattedDate = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString(undefined, {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  }) : 'Invalid date';
+  const handleEdit = () => {
+    onEdit(gig);
+    setMenuOpen(false);
+  };
 
+  const handleDelete = () => {
+    onDelete(gig.id);
+    setMenuOpen(false);
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-200 flex flex-col">
-      <div className="p-5 flex-grow">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col justify-between transition-shadow duration-300 hover:shadow-xl">
+      <div className="p-5">
         <div className="flex justify-between items-start">
-          <div className="flex-1 pr-2">
-            <h3 className="text-xl font-bold text-gray-800">{gig.jobTitle}</h3>
+          <div className="flex-1">
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[gig.jobStatus]}`}>
+              {gig.jobStatus}
+            </span>
+            <h3 className="text-xl font-bold text-gray-800 mt-2">{gig.jobTitle}</h3>
             <p className="text-sm text-gray-500">{gig.clientName}</p>
           </div>
           <div className="relative" ref={menuRef}>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded-full hover:bg-gray-100">
-              <MoreVertIcon className="w-6 h-6 text-gray-500" />
+            <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded-full hover:bg-gray-100 text-gray-500">
+              <MoreVertIcon className="w-6 h-6" />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 ring-1 ring-black ring-opacity-5">
-                <button onClick={() => { onEdit(gig); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit</button>
-                <button onClick={() => { onDelete(gig.id); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Delete</button>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5">
+                <div className="py-1">
+                  <button onClick={handleEdit} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Edit Gig
+                  </button>
+                  <button onClick={handleDelete} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                    Delete Gig
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
-        
-        <p className="text-gray-600 mt-3 text-sm">{gig.description}</p>
 
-        <div className="mt-4 space-y-2 text-sm">
-            <div className="flex items-center text-gray-700">
-                <LocationIcon className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                <span>{gig.jobSite}</span>
-            </div>
-            <a href={`tel:${gig.clientPhone}`} className="flex items-center text-gray-700 hover:text-brand-purple">
-                <PhoneIcon className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                <span>{gig.clientPhone}</span>
-            </a>
-            <a href={`mailto:${gig.clientEmail}`} className="flex items-center text-gray-700 hover:text-brand-purple">
-                <EmailIcon className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                <span>{gig.clientEmail}</span>
-            </a>
-             <p className="text-gray-700 font-medium pt-2">{formattedDate} at {gig.time}</p>
+        <div className="mt-4 space-y-2 text-sm text-gray-700">
+          <p><span className="font-semibold">Date:</span> {formatDate(gig.date)}</p>
+          <p><span className="font-semibold">Time:</span> {formatTime(gig.time)}</p>
+          <p><span className="font-semibold">Location:</span> {gig.jobSite}</p>
+          {gig.jobCost != null && (
+            <p className="text-lg font-bold text-green-600 mt-2">
+              ${gig.jobCost.toFixed(2)}
+            </p>
+          )}
         </div>
-
       </div>
-
-      <div className="border-t p-4 bg-gray-50 flex justify-between items-center">
-        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(gig.jobStatus)}`}>
-            {gig.jobStatus}
-        </span>
-        <div className="flex space-x-2">
-            <a href={`sms:${gig.clientPhone}`} className="p-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-brand-purple" title="Send SMS">
-                <TextIcon className="w-5 h-5"/>
+      
+      <div className="bg-gray-50 p-3 border-t border-gray-200">
+        <div className="flex justify-around items-center">
+            <a href={`tel:${gig.clientPhone}`} title="Call Client" className="text-gray-500 hover:text-brand-purple transition-colors">
+                <PhoneIcon className="w-6 h-6" />
             </a>
-            <a href={`tel:${gig.clientPhone}`} className="p-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-brand-purple" title="Call Client">
-                <PhoneIcon className="w-5 h-5"/>
+            <a href={`sms:${gig.clientPhone}`} title="Text Client" className="text-gray-500 hover:text-brand-purple transition-colors">
+                <TextIcon className="w-6 h-6" />
             </a>
-            <a href={`mailto:${gig.clientEmail}`} className="p-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-brand-purple" title="Email Client">
-                <EmailIcon className="w-5 h-5"/>
+            <a href={`mailto:${gig.clientEmail}`} title="Email Client" className="text-gray-500 hover:text-brand-purple transition-colors">
+                <EmailIcon className="w-6 h-6" />
+            </a>
+            <a href={`https://maps.google.com/?q=${encodeURIComponent(gig.clientAddress)}`} target="_blank" rel="noopener noreferrer" title="Get Directions" className="text-gray-500 hover:text-brand-purple transition-colors">
+                <LocationIcon className="w-6 h-6" />
             </a>
         </div>
       </div>
