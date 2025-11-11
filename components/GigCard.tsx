@@ -44,11 +44,9 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete }) => {
     }
   };
 
-  // FIX: Handle date parsing carefully to avoid timezone issues.
-  // The date from the form is YYYY-MM-DD, which if parsed with new Date() can result in a day off due to UTC conversion.
   const parts = gig.date.split('-');
   const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS Date
+  const month = parseInt(parts[1], 10) - 1; 
   const day = parseInt(parts[2], 10);
   const dateObj = new Date(year, month, day);
 
@@ -85,7 +83,15 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete }) => {
                 <LocationIcon className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
                 <span>{gig.jobSite}</span>
             </div>
-             <p className="text-gray-700 font-medium">{formattedDate} at {gig.time}</p>
+            <a href={`tel:${gig.clientPhone}`} className="flex items-center text-gray-700 hover:text-brand-purple">
+                <PhoneIcon className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                <span>{gig.clientPhone}</span>
+            </a>
+            <a href={`mailto:${gig.clientEmail}`} className="flex items-center text-gray-700 hover:text-brand-purple">
+                <EmailIcon className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                <span>{gig.clientEmail}</span>
+            </a>
+             <p className="text-gray-700 font-medium pt-2">{formattedDate} at {gig.time}</p>
         </div>
 
       </div>
