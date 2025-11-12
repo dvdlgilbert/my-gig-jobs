@@ -7,6 +7,8 @@ import GigForm from './components/GigForm';
 import PlusIcon from './components/icons/PlusIcon';
 import SearchIcon from './components/icons/SearchIcon';
 import DatabaseIcon from './components/icons/DatabaseIcon';
+import UploadIcon from './components/icons/UploadIcon';
+import DownloadIcon from './components/icons/DownloadIcon';
 
 type View = 'list' | 'form';
 
@@ -61,6 +63,55 @@ const App: React.FC = () => {
     setView('list');
     setEditingGig(null);
   };
+
+  const handleExportGigs = () => {
+    if (gigs.length === 0) {
+      alert("No gigs to export.");
+      return;
+    }
+    const gigsJson = JSON.stringify(gigs, null, 2);
+    const blob = new Blob([gigsJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const date = new Date().toISOString().split('T')[0];
+    link.download = `my-gigs-backup-${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportGigs = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to import gigs? This will overwrite your current data.")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result;
+          if (typeof text === 'string') {
+            const importedGigs = JSON.parse(text) as Gig[];
+            if (Array.isArray(importedGigs)) {
+              updateGigs(importedGigs);
+              alert("Gigs imported successfully!");
+            } else {
+              throw new Error("Invalid file format.");
+            }
+          }
+        } catch (error) {
+          console.error("Failed to import gigs:", error);
+          alert("Failed to import gigs. Please make sure the file is a valid JSON export from this app.");
+        }
+      };
+      reader.readAsText(file);
+    }
+    // Reset file input to allow importing the same file again
+    event.target.value = '';
+  };
   
   const filteredGigs = useMemo(() => {
     if (!searchTerm) {
@@ -76,20 +127,32 @@ const App: React.FC = () => {
     <div className="bg-gray-50 min-h-screen font-sans flex flex-col">
       {view === 'list' && (
          <header className="bg-brand-purple shadow-md sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-white">My GiG Jobs</h1>
-            {gigs.length > 0 && (
-              <div className="relative">
-                 <input
-                  type="text"
-                  placeholder="Search by title or description"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border rounded-full w-40 sm:w-56 text-sm focus:outline-none focus:ring-2 focus:ring-white"
-                />
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              </div>
-            )}
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center gap-4">
+            <h1 className="text-2xl font-bold text-white whitespace-nowrap">My GiG Jobs</h1>
+            <div className="flex items-center gap-2 justify-end w-full">
+              {gigs.length > 0 && (
+                <>
+                  <button onClick={handleExportGigs} className="p-2 text-white rounded-full hover:bg-white/20" title="Export Gigs">
+                    <DownloadIcon className="w-6 h-6" />
+                  </button>
+                  <label htmlFor="import-gigs-input" className="p-2 text-white rounded-full hover:bg-white/20 cursor-pointer" title="Import Gigs">
+                    <UploadIcon className="w-6 h-6" />
+                  </label>
+                  <input id="import-gigs-input" type="file" accept=".json" className="hidden" onChange={handleImportGigs} />
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 pr-4 py-2 border rounded-full w-32 sm:w-56 text-sm focus:outline-none focus:ring-2 focus:ring-white"
+                    />
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
       )}
