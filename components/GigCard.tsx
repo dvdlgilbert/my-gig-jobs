@@ -6,11 +6,13 @@ import PhoneIcon from './icons/PhoneIcon';
 import EmailIcon from './icons/EmailIcon';
 import TextIcon from './icons/TextIcon';
 import LocationIcon from './icons/LocationIcon';
+import ReceiptIcon from './icons/ReceiptIcon';
 
 interface GigCardProps {
   gig: Gig;
   onEdit: (gig: Gig) => void;
   onDelete: (gigId: string) => void;
+  onShowReceipt: (gig: Gig) => void;
 }
 
 // Helper component for displaying individual info items
@@ -24,7 +26,7 @@ const InfoItem: React.FC<{ label: string; value?: string | number | null; classN
   );
 };
 
-const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete }) => {
+const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete, onShowReceipt }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const getStatusColor = (status: string) => {
@@ -109,6 +111,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete }) => {
         <a href={`mailto:${gig.clientEmail}`} className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Email Client"><EmailIcon className="w-6 h-6" /></a>
         {/* Navigation now points to the job site address */}
         <a href={`https://maps.google.com/?q=${encodeURIComponent(gig.jobSite)}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Navigate to Job Site"><LocationIcon className="w-6 h-6" /></a>
+        <button onClick={() => onShowReceipt(gig)} className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Generate Receipt"><ReceiptIcon className="w-6 h-6" /></button>
       </div>
     </div>
   );
