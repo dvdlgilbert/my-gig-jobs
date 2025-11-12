@@ -4,6 +4,7 @@ import { getGigs, saveGigs } from './services/storageService';
 // FIX: Fix module resolution error by using relative paths.
 import GigCard from './components/GigCard';
 import GigForm from './components/GigForm';
+import ReceiptModal from './components/ReceiptModal';
 import PlusIcon from './components/icons/PlusIcon';
 import SearchIcon from './components/icons/SearchIcon';
 import DatabaseIcon from './components/icons/DatabaseIcon';
@@ -17,6 +18,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<View>('list');
   const [editingGig, setEditingGig] = useState<Gig | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [receiptGig, setReceiptGig] = useState<Gig | null>(null);
 
   useEffect(() => {
     setGigs(getGigs());
@@ -113,6 +115,14 @@ const App: React.FC = () => {
     event.target.value = '';
   };
   
+  const handleShowReceipt = (gig: Gig) => {
+    setReceiptGig(gig);
+  };
+
+  const handleCloseReceipt = () => {
+    setReceiptGig(null);
+  };
+
   const filteredGigs = useMemo(() => {
     if (!searchTerm) {
       return gigs;
@@ -168,6 +178,7 @@ const App: React.FC = () => {
                     gig={gig} 
                     onDelete={handleDeleteGig}
                     onEdit={handleEditGig}
+                    onShowReceipt={handleShowReceipt}
                   />
                 ))}
               </div>
@@ -200,6 +211,7 @@ const App: React.FC = () => {
       <footer className="w-full text-center py-4 text-gray-500 text-xs">
         Copyright (c) 2025 - Gigs and Side-Hustle Technologies, llc
       </footer>
+      {receiptGig && <ReceiptModal gig={receiptGig} onClose={handleCloseReceipt} />}
     </div>
   );
 };
