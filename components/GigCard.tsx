@@ -1,4 +1,4 @@
-// FIX: Removed invalid CDATA wrapper from file content.
+
 import React, { useState } from 'react';
 import type { Gig } from '../types';
 import MoreVertIcon from './icons/MoreVertIcon';
@@ -19,9 +19,9 @@ interface GigCardProps {
 const InfoItem: React.FC<{ label: string; value?: string | number | null; className?: string }> = ({ label, value, className = '' }) => {
   if (!value && typeof value !== 'number') return null;
   return (
-    <div className={`mt-2 ${className}`}>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm text-gray-800">{value}</p>
+    <div className={`mt-2 ${className}`} style={{ marginTop: '0.5rem' }}>
+      <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0 }}>{label}</p>
+      <p style={{ fontSize: '0.875rem', color: '#1f2937', margin: 0 }}>{value}</p>
     </div>
   );
 };
@@ -29,13 +29,14 @@ const InfoItem: React.FC<{ label: string; value?: string | number | null; classN
 const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete, onShowReceipt }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
+    const baseStyle = { padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 };
     switch (status) {
-      case 'Scheduled': return 'bg-blue-100 text-blue-800';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Working': return 'bg-indigo-100 text-indigo-800';
-      case 'Complete': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Scheduled': return { ...baseStyle, backgroundColor: '#dbeafe', color: '#1e40af' }; // blue
+      case 'Pending': return { ...baseStyle, backgroundColor: '#fef9c3', color: '#854d0e' }; // yellow
+      case 'Working': return { ...baseStyle, backgroundColor: '#e0e7ff', color: '#3730a3' }; // indigo
+      case 'Complete': return { ...baseStyle, backgroundColor: '#dcfce7', color: '#166534' }; // green
+      default: return { ...baseStyle, backgroundColor: '#f3f4f6', color: '#1f2937' }; // gray
     }
   };
   
@@ -55,46 +56,95 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete, onShowReceipt 
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit(gig);
+    setMenuOpen(false);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(gig.id);
+    setMenuOpen(false);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col justify-between">
-      <div className="p-5">
-        <div className="flex justify-between items-start mb-2">
+    <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+      <div style={{ padding: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
           <div>
-            <h3 className="text-xl font-bold text-gray-800">{gig.jobTitle}</h3>
-            <p className="text-sm text-gray-500 font-medium">{gig.clientName}</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1f2937', margin: 0 }}>{gig.jobTitle}</h3>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: 500, margin: 0 }}>{gig.clientName}</p>
           </div>
-          <div className="relative">
+          <div style={{ position: 'relative' }}>
             <button 
               onClick={() => setMenuOpen(!menuOpen)} 
-              onBlur={() => setTimeout(() => setMenuOpen(false), 150)} 
-              className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple"
+              style={{ padding: '0.5rem', borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              className="hover:bg-gray-100"
+              aria-label="Gig options"
             >
-              <MoreVertIcon className="w-6 h-6 text-gray-500" />
+              <MoreVertIcon style={{ width: '24px', height: '24px', color: '#6b7280' }} />
             </button>
+            
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
-                <ul className="py-1">
-                  <li><button onClick={() => { onEdit(gig); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit</button></li>
-                  <li><button onClick={() => { onDelete(gig.id); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Delete</button></li>
-                </ul>
-              </div>
+              <>
+                {/* Overlay to close menu when clicking outside */}
+                <div 
+                  onClick={() => setMenuOpen(false)}
+                  style={{ position: 'fixed', inset: 0, zIndex: 15, cursor: 'default' }}
+                ></div>
+                
+                <div style={{ 
+                  position: 'absolute', 
+                  right: 0, 
+                  marginTop: '0.5rem', 
+                  width: '12rem', 
+                  backgroundColor: 'white', 
+                  borderRadius: '0.375rem', 
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', 
+                  zIndex: 20,
+                  overflow: 'hidden',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <ul style={{ padding: '0.25rem 0', margin: 0, listStyle: 'none' }}>
+                    <li>
+                      <button 
+                        onClick={handleEditClick} 
+                        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#374151', background: 'none', border: 'none', cursor: 'pointer' }} 
+                        className="hover:bg-gray-100"
+                      >
+                        Edit
+                      </button>
+                    </li>
+                    <li>
+                      <button 
+                        onClick={handleDeleteClick} 
+                        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }} 
+                        className="hover:bg-gray-100"
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </>
             )}
           </div>
         </div>
 
-        <div className="mb-4">
-          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(gig.jobStatus)}`}>
+        <div style={{ marginBottom: '1rem' }}>
+          <span style={getStatusStyle(gig.jobStatus)}>
             {gig.jobStatus}
           </span>
         </div>
         
-        <div className="border-t pt-4 space-y-3 text-sm">
+        <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
             <InfoItem label="Description" value={gig.description} />
-            <div className="grid grid-cols-2 gap-x-4">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <InfoItem label="Date" value={formatDate(gig.date)} />
               <InfoItem label="Time" value={formatTime(gig.time)} />
             </div>
-             <div className="grid grid-cols-2 gap-x-4">
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <InfoItem label="Job Cost" value={gig.jobCost != null ? `$${gig.jobCost.toFixed(2)}` : 'N/A'} />
                 <InfoItem label="Hours Worked" value={gig.hoursWorked} />
             </div>
@@ -105,13 +155,12 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete, onShowReceipt 
         </div>
       </div>
       
-      <div className="bg-gray-50 p-3 flex justify-around border-t">
-        <a href={`tel:${gig.clientPhone}`} className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Call Client"><PhoneIcon className="w-6 h-6" /></a>
-        <a href={`sms:${gig.clientPhone}`} className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Text Client"><TextIcon className="w-6 h-6" /></a>
-        <a href={`mailto:${gig.clientEmail}`} className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Email Client"><EmailIcon className="w-6 h-6" /></a>
-        {/* Navigation now points to the job site address */}
-        <a href={`https://maps.google.com/?q=${encodeURIComponent(gig.jobSite)}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Navigate to Job Site"><LocationIcon className="w-6 h-6" /></a>
-        <button onClick={() => onShowReceipt(gig)} className="text-gray-600 hover:text-brand-purple p-2 rounded-full hover:bg-gray-200 transition-colors" title="Generate Receipt"><ReceiptIcon className="w-6 h-6" /></button>
+      <div style={{ backgroundColor: '#f9fafb', padding: '0.75rem', display: 'flex', justifyContent: 'space-around', borderTop: '1px solid #e5e7eb' }}>
+        <a href={`tel:${gig.clientPhone}`} style={{ color: '#4b5563', padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Call Client"><PhoneIcon style={{ width: '24px', height: '24px' }} /></a>
+        <a href={`sms:${gig.clientPhone}`} style={{ color: '#4b5563', padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Text Client"><TextIcon style={{ width: '24px', height: '24px' }} /></a>
+        <a href={`mailto:${gig.clientEmail}`} style={{ color: '#4b5563', padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Email Client"><EmailIcon style={{ width: '24px', height: '24px' }} /></a>
+        <a href={`https://maps.google.com/?q=${encodeURIComponent(gig.jobSite)}`} target="_blank" rel="noopener noreferrer" style={{ color: '#4b5563', padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Navigate to Job Site"><LocationIcon style={{ width: '24px', height: '24px' }} /></a>
+        <button onClick={() => onShowReceipt(gig)} style={{ color: '#4b5563', padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }} title="Generate Receipt"><ReceiptIcon style={{ width: '24px', height: '24px' }} /></button>
       </div>
     </div>
   );
