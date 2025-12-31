@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { Gig } from './types';
 import { getGigs, saveGigs } from './services/storageService';
-// FIX: Fix module resolution error by using relative paths.
 import GigCard from './components/GigCard';
 import GigForm from './components/GigForm';
 import ReceiptModal from './components/ReceiptModal';
@@ -29,7 +29,8 @@ const App: React.FC = () => {
   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
   const [filterMonth, setFilterMonth] = useState('');
   const [filterYear, setFilterYear] = useState('');
-
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setGigs(getGigs());
@@ -56,14 +57,22 @@ const App: React.FC = () => {
   };
   
   const handleEditGig = (gig: Gig) => {
-    setEditingGig(gig);
+    // Ensure the specific gig is set before transitioning the view
+    setEditingGig({ ...gig });
     setView('form');
-  }
+    // Also close the header menu just in case
+    setIsHeaderMenuOpen(false);
+  };
 
   const handleDeleteGig = (gigId: string) => {
     if (window.confirm('Are you sure you want to delete this gig?')) {
       const newGigs = gigs.filter(g => g.id !== gigId);
       updateGigs(newGigs);
+      // If we are currently editing this gig, go back to list
+      if (editingGig && editingGig.id === gigId) {
+        setView('list');
+        setEditingGig(null);
+      }
     }
   };
 
@@ -95,6 +104,10 @@ const App: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleImportGigs = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -122,8 +135,8 @@ const App: React.FC = () => {
       };
       reader.readAsText(file);
     }
-    // Reset file input to allow importing the same file again
     event.target.value = '';
+    setIsHeaderMenuOpen(false);
   };
   
   const handleShowReceipt = (gig: Gig) => {
@@ -157,7 +170,8 @@ const App: React.FC = () => {
     if (searchTerm) {
       currentlyFilteredGigs = currentlyFilteredGigs.filter(gig => 
         gig.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gig.description.toLowerCase().includes(searchTerm.toLowerCase())
+        gig.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        gig.clientName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -180,75 +194,124 @@ const App: React.FC = () => {
   const isFilterActive = !!(filterMonth || filterYear);
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex flex-col">
-      {view === 'list' && (
-         <header className="bg-brand-purple shadow-md sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center gap-4">
-            <h1 className="text-2xl font-bold text-white whitespace-nowrap">My GiG Jobs</h1>
-            <div className="flex items-center gap-2 justify-end w-full">
-              {gigs.length > 0 && (
-                <>
-                  <button onClick={handleExportGigs} className="p-2 text-white rounded-full hover:bg-white/20" title="Export Gigs">
-                    <DownloadIcon className="w-6 h-6" />
-                  </button>
-                  <label htmlFor="import-gigs-input" className="p-2 text-white rounded-full hover:bg-white/20 cursor-pointer" title="Import Gigs">
-                    <UploadIcon className="w-6 h-6" />
-                  </label>
-                  <input id="import-gigs-input" type="file" accept=".json" className="hidden" onChange={handleImportGigs} />
+    <div className="bg-gray-50 min-h-screen font-sans flex flex-col" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb' }}>
+      {/* Inject styles for search placeholder */}
+      <style>{`
+        .white-placeholder::placeholder {
+          color: rgba(255, 255, 255, 0.75) !important;
+          opacity: 1;
+        }
+      `}</style>
 
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border rounded-full w-32 sm:w-56 text-sm focus:outline-none focus:ring-2 focus:ring-white"
-                    />
-                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+      {view === 'list' && (
+         <header style={{ backgroundColor: '#9333ea', color: 'white', padding: '1rem', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>My GiG Jobs</h1>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexGrow: 1, justifyContent: 'flex-end' }}>
+              {gigs.length > 0 && (
+                <div style={{ position: 'relative', maxWidth: '300px', width: '100%' }}>
+                  <input
+                    type="text"
+                    className="white-placeholder"
+                    placeholder="Search by title, description, client..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      paddingLeft: '2.25rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem',
+                      borderRadius: '9999px',
+                      border: 'none',
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      color: 'white',
+                      outline: 'none',
+                      fontSize: '0.875rem'
+                    }}
+                  />
+                  <div style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                      <SearchIcon style={{ width: '18px', height: '18px', color: 'rgba(255, 255, 255, 0.8)' }} />
                   </div>
-                  
-                  <div className="relative">
-                    <button 
-                      onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)} 
-                      onBlur={() => setTimeout(() => setIsHeaderMenuOpen(false), 150)} 
-                      className="p-2 text-white rounded-full hover:bg-white/20"
-                      title="More options"
-                    >
-                      <MoreVertIcon className="w-6 h-6" />
-                      {isFilterActive && <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-yellow-400 ring-2 ring-brand-purple"></span>}
-                    </button>
-                     {isHeaderMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-20 origin-top-right">
-                        <ul className="py-1">
-                           <li>
-                            <button onClick={() => { setIsFilterModalOpen(true); setIsHeaderMenuOpen(false); }} className="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                              <FilterIcon className="w-5 h-5" />
-                              <span>Filter Gigs</span>
-                              {isFilterActive && <span className="text-xs font-semibold text-brand-purple ml-auto">Filtered</span>}
+                </div>
+              )}
+              
+              {/* Menu Button - Always Visible */}
+              <div style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setIsHeaderMenuOpen(!isHeaderMenuOpen)} 
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '50%',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="More options"
+                >
+                  <MoreVertIcon style={{ width: '24px', height: '24px' }} />
+                  {isFilterActive && <span style={{ position: 'absolute', top: 0, right: 0, width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#facc15', border: '2px solid #9333ea' }}></span>}
+                </button>
+                
+                  {/* Transparent overlay to close menu when clicking outside */}
+                  {isHeaderMenuOpen && (
+                    <div 
+                      onClick={() => setIsHeaderMenuOpen(false)}
+                      style={{ position: 'fixed', inset: 0, zIndex: 15, cursor: 'default' }}
+                    ></div>
+                  )}
+
+                  {isHeaderMenuOpen && (
+                  <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: '0.5rem', width: '14rem', backgroundColor: 'white', borderRadius: '0.375rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', zIndex: 20, overflow: 'hidden' }}>
+                    <ul style={{ listStyle: 'none', padding: '0.25rem 0', margin: 0 }}>
+                        <li>
+                        <button onClick={handleImportClick} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.5rem 1rem', fontSize: '0.875rem', color: '#374151', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer' }} className="hover:bg-gray-100">
+                          <UploadIcon style={{ width: '20px', height: '20px' }} />
+                          <span>Import Gigs</span>
+                        </button>
+                      </li>
+                      {gigs.length > 0 && (
+                        <>
+                          <li>
+                            <button onClick={() => { handleExportGigs(); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.5rem 1rem', fontSize: '0.875rem', color: '#374151', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer' }} className="hover:bg-gray-100">
+                              <DownloadIcon style={{ width: '20px', height: '20px' }} />
+                              <span>Export Gigs</span>
                             </button>
                           </li>
                           <li>
-                            <button onClick={() => { setIsDeleteAllModalOpen(true); setIsHeaderMenuOpen(false); }} className="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                              <TrashIcon className="w-5 h-5" />
+                            <button onClick={() => { setIsFilterModalOpen(true); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.5rem 1rem', fontSize: '0.875rem', color: '#374151', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer' }} className="hover:bg-gray-100">
+                              <FilterIcon style={{ width: '20px', height: '20px' }} />
+                              <span>Filter Gigs</span>
+                              {isFilterActive && <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#9333ea', marginLeft: 'auto' }}>Active</span>}
+                            </button>
+                          </li>
+                          <li>
+                            <button onClick={() => { setIsDeleteAllModalOpen(true); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.5rem 1rem', fontSize: '0.875rem', color: '#dc2626', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer' }} className="hover:bg-gray-100">
+                              <TrashIcon style={{ width: '20px', height: '20px' }} />
                               <span>Delete All Data</span>
                             </button>
                           </li>
-                        </ul>
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </ul>
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </header>
       )}
 
-      <main className="container mx-auto p-4 flex-grow">
+      <main className="container mx-auto p-4 flex-grow" style={{ flexGrow: 1, padding: '1rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         {view === 'list' ? (
           <>
             {filteredGigs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                 {filteredGigs.map(gig => (
                   <GigCard 
                     key={gig.id} 
@@ -260,20 +323,22 @@ const App: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16 px-6">
+              <div style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
                  { (gigs.length > 0 && filteredGigs.length === 0) ? (
                   <>
-                    <p className="text-gray-600 text-lg mb-4">No gigs match your current filter.</p>
-                    <button onClick={handleClearFilter} className="bg-brand-purple text-white px-4 py-2 rounded-md hover:bg-purple-700 font-medium">Clear Filter</button>
+                    <p style={{ color: '#4b5563', fontSize: '1.125rem', marginBottom: '1rem' }}>No gigs match your current filter or search.</p>
+                    <button onClick={handleClearFilter} style={{ backgroundColor: '#9333ea', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.375rem', fontWeight: 500, border: 'none', cursor: 'pointer' }}>Clear Filter</button>
                   </>
                 ) : (
                   <>
-                    <DatabaseIcon className="w-16 h-16 mx-auto text-gray-400" />
-                    <div className="mt-6 bg-white p-6 rounded-lg shadow-sm">
-                       <p className="mt-2 text-gray-600 text-left">
+                    <div style={{ width: '64px', height: '64px', margin: '0 auto', color: '#9ca3af' }}>
+                       <DatabaseIcon style={{ width: '100%', height: '100%' }} />
+                    </div>
+                    <div style={{ marginTop: '1.5rem', backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
+                       <p style={{ marginTop: '0.5rem', color: '#4b5563', textAlign: 'left' }}>
                          My GiGs is a standalone mobile application built to help freelancers, independent contractors, gig workers, and side-hustlers manage and track their work history, earnings, and client interactions. The application also provides convenient tools for communicating with clients via SMS, phone calls, and email, when permitted by the user.
                        </p>
-                       <p className="mt-4 text-gray-600 text-left font-medium">
+                       <p style={{ marginTop: '1rem', color: '#4b5563', textAlign: 'left', fontWeight: 500 }}>
                          My Gigs is a product of Gigs and Side-Hustle Technologies, LLC.
                        </p>
                     </div>
@@ -281,8 +346,28 @@ const App: React.FC = () => {
                 )}
               </div>
             )}
-            <button onClick={handleAddNew} className="fixed bottom-6 right-6 bg-brand-purple text-white p-4 rounded-full hover:bg-purple-700 shadow-lg transition-transform duration-200 hover:scale-110">
-              <PlusIcon className="w-8 h-8" />
+            <button 
+              onClick={handleAddNew} 
+              aria-label="Add New Gig"
+              style={{ 
+                backgroundColor: '#9333ea', 
+                color: 'white',
+                width: '64px', 
+                height: '64px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'fixed',
+                bottom: '90px',
+                right: '24px',
+                zIndex: 50,
+                border: 'none',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                cursor: 'pointer'
+              }}
+            >
+              <PlusIcon style={{ width: '32px', height: '32px' }} />
             </button>
           </>
         ) : (
@@ -294,9 +379,12 @@ const App: React.FC = () => {
           />
         )}
       </main>
-      <footer className="w-full text-center py-4 text-gray-500 text-xs">
+      <footer style={{ width: '100%', textAlign: 'center', padding: '1rem', color: '#6b7280', fontSize: '0.75rem', marginTop: 'auto' }}>
         Copyright (c) 2025 - Gigs and Side-Hustle Technologies, llc
       </footer>
+      {/* Hidden File Input - Moved outside the menu conditional to ensure it remains mounted */}
+      <input ref={fileInputRef} id="import-gigs-input" type="file" accept=".json" className="hidden" onChange={handleImportGigs} style={{ display: 'none' }} />
+
       {receiptGig && <ReceiptModal gig={receiptGig} onClose={handleCloseReceipt} />}
       {isFilterModalOpen && (
         <FilterModal 
