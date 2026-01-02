@@ -146,8 +146,9 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onDelete, onShowReceipt 
             </div>
              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <InfoItem label="Job Cost" value={gig.jobCost != null ? `$${gig.jobCost.toFixed(2)}` : 'N/A'} />
-                <InfoItem label="Hours Worked" value={gig.hoursWorked} />
+                <InfoItem label="Tax Rate" value={gig.taxRate != null ? `${gig.taxRate}%` : null} />
             </div>
+            <InfoItem label="Hours Worked" value={gig.hoursWorked} />
             <InfoItem label="Job Site / Location" value={gig.jobSite} />
             <InfoItem label="Client Phone" value={gig.clientPhone} />
             <InfoItem label="Client Email" value={gig.clientEmail} />
