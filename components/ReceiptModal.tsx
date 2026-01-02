@@ -125,7 +125,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ gig, onClose }) => {
           </div>
           <footer className="text-center text-xs text-gray-500 pt-8 mt-8 border-t">
             <p>Thank you for your business!</p>
-            <p>Gigs and Side-Hustle Technologies, llc</p>
+            <p>This receipt is a Gigs and Side Hustles generated form: Copyright (c) 2025</p>
           </footer>
         </div>
         <div className="bg-gray-100 p-4 flex flex-wrap justify-end items-center gap-3">
