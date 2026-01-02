@@ -1,3 +1,4 @@
+
 export type GigStatus = 'Scheduled' | 'Pending' | 'Working' | 'Complete';
 
 export interface Gig {
@@ -11,6 +12,7 @@ export interface Gig {
   date: string; // ISO string format
   time: string; // HH:mm format
   jobCost?: number;
+  taxRate?: number;
   hoursWorked?: number;
   jobSite: string;
   jobStatus: GigStatus;
