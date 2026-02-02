@@ -1,6 +1,12 @@
 
 export type GigStatus = 'Scheduled' | 'Pending' | 'Working' | 'Complete';
 
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+}
+
 export interface Gig {
   id: string;
   jobTitle: string;
@@ -13,6 +19,7 @@ export interface Gig {
   time: string; // HH:mm format
   jobCost?: number;
   taxRate?: number;
+  expenses?: Expense[];
   hoursWorked?: number;
   jobSite: string;
   jobStatus: GigStatus;
