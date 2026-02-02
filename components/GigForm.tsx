@@ -37,7 +37,6 @@ const GigForm: React.FC<GigFormProps> = ({ gig, initialSection = 'top', onSave, 
   
   const expensesRef = useRef<HTMLDivElement>(null);
 
-  // Sync state when editing an existing gig
   useEffect(() => {
     if (gig) {
       setFormData({
@@ -57,7 +56,6 @@ const GigForm: React.FC<GigFormProps> = ({ gig, initialSection = 'top', onSave, 
       });
       setExpenses(gig.expenses || []);
       
-      // Mirror Android behavior: Jump to expenses if user selected "Manage Expenses"
       if (initialSection === 'expenses') {
         setTimeout(() => {
           expensesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -111,10 +109,14 @@ const GigForm: React.FC<GigFormProps> = ({ gig, initialSection = 'top', onSave, 
     borderRadius: '0.75rem', border: '1px solid #d1d5db', fontSize: '1rem', boxSizing: 'border-box', outline: 'none', backgroundColor: 'white'
   };
 
+  const labelStyle: React.CSSProperties = {
+    display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.375rem', fontWeight: 600
+  };
+
   return (
     <div style={{ backgroundColor: '#f9fafb', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header style={{ backgroundColor: '#9333ea', color: 'white', padding: '1rem', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem', display: 'flex' }}>
+        <button onClick={onCancel} type="button" style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem', display: 'flex' }}>
           <ArrowLeftIcon style={{ width: '24px', height: '24px' }} />
         </button>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginLeft: '0.5rem' }}>{gig ? 'Update Gig Details' : 'Create New Job Record'}</h2>
@@ -124,53 +126,90 @@ const GigForm: React.FC<GigFormProps> = ({ gig, initialSection = 'top', onSave, 
         <form onSubmit={handleSubmit} style={{ maxWidth: '34rem', margin: '0 auto', padding: '2rem 1.25rem' }}>
           
           <h3 style={sectionTitleStyle}>General Information</h3>
-          <input type="text" name="jobTitle" placeholder="What is the job called?" value={formData.jobTitle} onChange={handleChange} required style={commonInputStyle} />
-          <input type="text" name="jobSite" placeholder="Where is the site located?" value={formData.jobSite} onChange={handleChange} required style={commonInputStyle} />
-          <textarea name="description" placeholder="Provide a brief scope of work..." value={formData.description} onChange={handleChange} rows={3} required style={{ ...commonInputStyle, resize: 'none' }}></textarea>
+          <div>
+            <label style={labelStyle}>Job Title</label>
+            <input type="text" name="jobTitle" placeholder="e.g. Living Room Painting" value={formData.jobTitle} onChange={handleChange} required style={commonInputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Job Site / Location</label>
+            <input type="text" name="jobSite" placeholder="Street Address or Site Name" value={formData.jobSite} onChange={handleChange} required style={commonInputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Work Description</label>
+            <textarea name="description" placeholder="Brief scope of the work to be performed..." value={formData.description} onChange={handleChange} rows={3} required style={{ ...commonInputStyle, resize: 'none' }}></textarea>
+          </div>
           
           <h3 style={sectionTitleStyle}>Client Connection</h3>
-          <input type="text" name="clientName" placeholder="Client Contact Name" value={formData.clientName} onChange={handleChange} required style={commonInputStyle} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <input type="tel" name="clientPhone" placeholder="Phone Number" value={formData.clientPhone} onChange={handleChange} required style={commonInputStyle} />
-            <input type="email" name="clientEmail" placeholder="Email Address" value={formData.clientEmail} onChange={handleChange} required style={commonInputStyle} />
+          <div>
+            <label style={labelStyle}>Client Full Name</label>
+            <input type="text" name="clientName" placeholder="John Doe" value={formData.clientName} onChange={handleChange} required style={commonInputStyle} />
           </div>
-          <input type="text" name="clientAddress" placeholder="Full Billing/Mailing Address" value={formData.clientAddress} onChange={handleChange} required style={commonInputStyle} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={labelStyle}>Phone Number</label>
+              <input type="tel" name="clientPhone" placeholder="(555) 000-0000" value={formData.clientPhone} onChange={handleChange} required style={commonInputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Email Address</label>
+              <input type="email" name="clientEmail" placeholder="client@example.com" value={formData.clientEmail} onChange={handleChange} required style={commonInputStyle} />
+            </div>
+          </div>
+          <div>
+            <label style={labelStyle}>Billing / Mailing Address</label>
+            <input type="text" name="clientAddress" placeholder="Full address for invoicing" value={formData.clientAddress} onChange={handleChange} required style={commonInputStyle} />
+          </div>
 
           <h3 style={sectionTitleStyle}>Timing & Financials</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.375rem', fontWeight: 600 }}>Scheduled Date</label>
-                <input type="date" name="date" value={formData.date} onChange={handleChange} required style={{ ...commonInputStyle, marginBottom: 0 }} />
+                <label style={labelStyle}>Scheduled Date</label>
+                <input type="date" name="date" value={formData.date} onChange={handleChange} required style={{ ...commonInputStyle }} />
             </div>
             <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.375rem', fontWeight: 600 }}>Arrival Time</label>
-                <input type="time" name="time" value={formData.time} onChange={handleChange} required style={{ ...commonInputStyle, marginBottom: 0 }} />
+                <label style={labelStyle}>Arrival Time</label>
+                <input type="time" name="time" value={formData.time} onChange={handleChange} required style={{ ...commonInputStyle }} />
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.25rem' }}>
-            <input type="number" name="jobCost" placeholder="Labor Charge ($)" value={formData.jobCost} onChange={handleChange} step="0.01" style={commonInputStyle} />
-            <input type="number" name="taxRate" placeholder="Tax Rate (%)" value={formData.taxRate} onChange={handleChange} step="0.01" style={commonInputStyle} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={labelStyle}>Labor Charge ($)</label>
+              <input type="number" name="jobCost" placeholder="0.00" value={formData.jobCost} onChange={handleChange} step="0.01" style={commonInputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Tax Rate (%)</label>
+              <input type="number" name="taxRate" placeholder="0.00" value={formData.taxRate} onChange={handleChange} step="0.01" style={commonInputStyle} />
+            </div>
           </div>
-          <input type="number" name="hoursWorked" placeholder="Estimated Hours" value={formData.hoursWorked} onChange={handleChange} step="0.1" style={commonInputStyle} />
+          <div>
+            <label style={labelStyle}>Estimated Hours Worked</label>
+            <input type="number" name="hoursWorked" placeholder="0.0" value={formData.hoursWorked} onChange={handleChange} step="0.1" style={commonInputStyle} />
+          </div>
           
-          <div style={{ margin: '1rem 0 2rem 0' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem', fontWeight: 600 }}>Project Lifecycle Status</label>
+          <div style={{ margin: '0 0 2rem 0' }}>
+            <label style={labelStyle}>Project Lifecycle Status</label>
             <select name="jobStatus" value={formData.jobStatus} onChange={handleChange} style={commonInputStyle}>
                 {['Scheduled', 'Pending', 'Working', 'Complete'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
-          {/* Itemized Expenses Section */}
           <div ref={expensesRef} style={{ marginTop: '2.5rem', backgroundColor: 'white', padding: '1.75rem', borderRadius: '1.25rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
             <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1f2937', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 Expenses & Materials
             </h3>
             <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem' }}>
-              <input type="text" placeholder="Item/Material Name" value={newExpenseDesc} onChange={e => setNewExpenseDesc(e.target.value)} style={{ ...commonInputStyle, marginBottom: 0, flexGrow: 1 }} />
-              <input type="number" placeholder="$" value={newExpenseAmt} onChange={e => setNewExpenseAmt(e.target.value)} style={{ ...commonInputStyle, marginBottom: 0, width: '110px' }} />
-              <button type="button" onClick={handleAddExpense} style={{ backgroundColor: '#9333ea', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0 1.25rem', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                <PlusIcon style={{ width: '24px' }} />
-              </button>
+              <div style={{ flexGrow: 1 }}>
+                <label style={labelStyle}>Item Name</label>
+                <input type="text" placeholder="Fuel, Lumber, etc." value={newExpenseDesc} onChange={e => setNewExpenseDesc(e.target.value)} style={{ ...commonInputStyle, marginBottom: 0 }} />
+              </div>
+              <div style={{ width: '110px' }}>
+                <label style={labelStyle}>Amount ($)</label>
+                <input type="number" placeholder="0.00" value={newExpenseAmt} onChange={e => setNewExpenseAmt(e.target.value)} style={{ ...commonInputStyle, marginBottom: 0 }} />
+              </div>
+              <div style={{ alignSelf: 'flex-end' }}>
+                <button type="button" onClick={handleAddExpense} style={{ backgroundColor: '#9333ea', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0 1.25rem', height: '45px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                  <PlusIcon style={{ width: '24px' }} />
+                </button>
+              </div>
             </div>
             
             {expenses.length > 0 ? (
@@ -203,7 +242,7 @@ const GigForm: React.FC<GigFormProps> = ({ gig, initialSection = 'top', onSave, 
             ) : (
                <button type="button" onClick={onCancel} style={{ color: '#6b7280', background: 'none', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '0.9375rem' }}>Discard Draft</button>
             )}
-            <button type="submit" style={{ backgroundColor: '#9333ea', color: 'white', padding: '1rem 3rem', borderRadius: '1rem', border: 'none', fontWeight: 800, fontSize: '1.0625rem', cursor: 'pointer', boxShadow: '0 10px 15px rgba(147, 51, 234, 0.25)', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+            <button type="submit" style={{ backgroundColor: '#9333ea', color: 'white', padding: '1rem 3rem', borderRadius: '1rem', border: 'none', fontWeight: 800, fontSize: '1.0625rem', cursor: 'pointer', boxShadow: '0 10px 15px rgba(147, 51, 234, 0.25)', transition: 'transform 0.2s' }}>
               {gig ? 'Update Gig' : 'Save & Create Gig'}
             </button>
           </div>
