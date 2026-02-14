@@ -9,10 +9,10 @@ with internet access. Examples of capabilities include, but are not limited to:
 •	Creating pdf records of individual jobs and periodic reports
 
 More specifically the software offers the ability to:
-•	Creating /Reading/Updating/Deleting job records
-:Job Identification Number
-;Job Title (Individual / Company providing the service)
-;Job Description
+•	Creating /Reading/Updating/Deleting job records:
+  Job Identification Number
+; Job Title (Individual / Company providing the service)
+; Job Description
 ;	Job Date
 ;	Job Time
 ;	Scheduling Reminders
