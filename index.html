@@ -6,7 +6,20 @@
 <title>My GiG Jobs Tracker</title>
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#6b7280; flex-direction:column; gap:10px;">
+    <div>Loading My GiG Jobs Tracker...</div>
+    <div id="debug-info" style="font-size: 10px; color: #9ca3af;"></div>
+  </div>
+</div>
+<script>
+  window.onerror = function(msg, url, lineNo, columnNo, error) {
+    var debug = document.getElementById('debug-info');
+    if (debug) debug.innerText = 'Error: ' + msg + ' at ' + lineNo + ':' + columnNo;
+    console.error(msg, url, lineNo, columnNo, error);
+    return false;
+  };
+</script>
 <script type="module" src="./index.tsx"></script>
 </body>
 </html>
