@@ -37,7 +37,7 @@ const GigForm: React.FC<GigFormProps> = ({ gig, initialSection = 'top', onSave, 
   const [newExpenseDesc, setNewExpenseDesc] = useState('');
   const [newExpenseAmt, setNewExpenseAmt] = useState('');
   
-  const t = translations[language];
+  const t = translations[language] || translations.en;
   const expensesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
