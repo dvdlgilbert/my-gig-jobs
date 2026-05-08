@@ -10,7 +10,7 @@ interface SettingsViewProps {
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdateSettings, onBack }) => {
-  const t = translations[settings.language];
+  const t = translations[settings.language] || translations.en;
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onUpdateSettings({ ...settings, language: e.target.value as Language });
