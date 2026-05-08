@@ -16,7 +16,7 @@ interface FilterModalProps {
 const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, onClear, initialMonth, initialYear, language }) => {
   const [month, setMonth] = useState(initialMonth);
   const [year, setYear] = useState(initialYear);
-  const t = translations[language];
+  const t = translations[language] || translations.en;
 
   useEffect(() => {
     setMonth(initialMonth);
