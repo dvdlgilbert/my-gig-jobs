@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import type { Gig } from './types';
-import { getGigs, saveGigs } from './services/storageService';
+import type { Gig, UserSettings } from './types';
+import { getGigs, saveGigs, getSettings, saveSettings } from './services/storageService';
+import { translations, currencies } from './translations';
 import GigCard from './components/GigCard';
 import GigForm from './components/GigForm';
+import SettingsView from './components/SettingsView';
 import ReceiptModal from './components/ReceiptModal';
 import FilterModal from './components/FilterModal';
 import DeleteAllModal from './components/DeleteAllModal';
@@ -23,11 +25,12 @@ import DownloadIcon from './components/icons/DownloadIcon';
  * handles global search/filtering, and orchestrates data persistence.
  */
 
-type View = 'list' | 'form';
+type View = 'list' | 'form' | 'settings';
 
 const App: React.FC = () => {
   // --- State Management ---
   const [gigs, setGigs] = useState<Gig[]>([]);
+  const [settings, setSettings] = useState<UserSettings>({ language: 'en', currencyCode: 'USD' });
   const [view, setView] = useState<View>('list');
   const [editingGig, setEditingGig] = useState<Gig | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,7 +47,16 @@ const App: React.FC = () => {
   // --- Persistence ---
   useEffect(() => {
     setGigs(getGigs());
+    setSettings(getSettings());
   }, []);
+
+  const t = translations[settings.language];
+  const currency = currencies.find(c => c.code === settings.currencyCode) || currencies[0];
+
+  const handleUpdateSettings = (newSettings: UserSettings) => {
+    setSettings(newSettings);
+    saveSettings(newSettings);
+  };
 
   const updateGigs = (newGigs: Gig[]) => {
     const sortedGigs = newGigs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -75,7 +87,7 @@ const App: React.FC = () => {
   };
 
   const handleDeleteGig = (gigId: string) => {
-    if (window.confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+    if (window.confirm(t.confirmDeleteGig)) {
       const newGigs = gigs.filter(g => g.id !== gigId);
       updateGigs(newGigs);
     }
@@ -89,7 +101,7 @@ const App: React.FC = () => {
 
   const handleExportGigs = () => {
     if (gigs.length === 0) {
-      alert("No data to export.");
+      alert(t.noDataToExport);
       return;
     }
     const gigsJson = JSON.stringify(gigs, null, 2);
@@ -110,7 +122,7 @@ const App: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (window.confirm("Importing will add to your current records. Continue?")) {
+    if (window.confirm(t.confirmImport)) {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -124,10 +136,10 @@ const App: React.FC = () => {
               }
             });
             updateGigs(mergedGigs);
-            alert("Gigs imported successfully!");
+            alert(t.importSuccess);
           }
         } catch (error) {
-          alert("Failed to import. The file might be corrupted or in the wrong format.");
+          alert(t.importError);
         }
       };
       reader.readAsText(file);
@@ -164,7 +176,7 @@ const App: React.FC = () => {
       {view === 'list' && (
          <header style={{ backgroundColor: '#9333ea', color: 'white', padding: '1rem', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>My GiG Jobs</h1>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{t.appName}</h1>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexGrow: 1, justifyContent: 'flex-end' }}>
                 {/* Search Input */}
@@ -172,7 +184,7 @@ const App: React.FC = () => {
                   <input
                     type="text"
                     className="white-placeholder"
-                    placeholder="Search titles, clients..."
+                    placeholder={t.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{ width: '100%', paddingLeft: '2.25rem', paddingRight: '1rem', paddingTop: '0.5rem', paddingBottom: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white', outline: 'none', fontSize: '0.875rem' }}
@@ -192,17 +204,22 @@ const App: React.FC = () => {
                       <div onClick={() => setIsHeaderMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 15 }}></div>
                       <div style={{ position: 'absolute', right: 0, top: '100%', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', zIndex: 20, width: '14rem', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
                         <button onClick={() => fileInputRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
-                          <UploadIcon style={{ width: '20px' }} /> Import Gigs
+                          <UploadIcon style={{ width: '20px' }} /> {t.importGigs}
                         </button>
                         <button onClick={handleExportGigs} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
-                          <DownloadIcon style={{ width: '20px' }} /> Export Gigs
+                          <DownloadIcon style={{ width: '20px' }} /> {t.exportGigs}
                         </button>
                         <button onClick={() => { setIsFilterModalOpen(true); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
-                          <FilterIcon style={{ width: '20px' }} /> Filter by Date
+                          <FilterIcon style={{ width: '20px' }} /> {t.filter}
+                        </button>
+                        <hr style={{ margin: '0', border: '0', borderTop: '1px solid #f3f4f6' }} />
+                        <button onClick={() => { setView('settings'); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
+                          {/* Use settings icon or similar if available, or just text */}
+                          <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⚙️</div> {t.settings}
                         </button>
                         <hr style={{ margin: '0', border: '0', borderTop: '1px solid #f3f4f6' }} />
                         <button onClick={() => { setIsDeleteAllModalOpen(true); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#dc2626', fontSize: '0.875rem' }}>
-                          <TrashIcon style={{ width: '20px' }} /> Delete All Data
+                          <TrashIcon style={{ width: '20px' }} /> {t.deleteAll}
                         </button>
                       </div>
                     </>
@@ -226,13 +243,15 @@ const App: React.FC = () => {
                     onEdit={(g) => handleEditGig(g, 'top')}
                     onManageExpenses={(g) => handleEditGig(g, 'expenses')}
                     onShowReceipt={setReceiptGig}
+                    currencySymbol={currency.symbol}
+                    language={settings.language}
                   />
                 ))}
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '6rem 2rem', color: '#6b7280' }}>
-                <p style={{ fontSize: '1.125rem' }}>No records found.</p>
-                <p style={{ fontSize: '0.875rem' }}>Try changing your search or adding a new gig.</p>
+                <p style={{ fontSize: '1.125rem' }}>{t.noRecordsFound}</p>
+                <p style={{ fontSize: '0.875rem' }}>{t.noRecordsSub}</p>
               </div>
             )}
             
@@ -241,13 +260,20 @@ const App: React.FC = () => {
               <PlusIcon style={{ width: '32px', height: '32px' }} />
             </button>
           </>
-        ) : (
+        ) : view === 'form' ? (
           <GigForm 
             gig={editingGig} 
             initialSection={initialFormSection}
             onSave={handleSaveGig} 
             onCancel={() => setView('list')}
             onDelete={(id) => { handleDeleteGig(id); setView('list'); }}
+            language={settings.language}
+          />
+        ) : (
+          <SettingsView 
+            settings={settings}
+            onUpdateSettings={handleUpdateSettings}
+            onBack={() => setView('list')}
           />
         )}
       </main>
@@ -258,9 +284,9 @@ const App: React.FC = () => {
       
       {/* Off-screen inputs and Modals */}
       <input ref={fileInputRef} type="file" accept=".json" onChange={handleImportGigs} style={{ display: 'none' }} />
-      {receiptGig && <ReceiptModal gig={receiptGig} onClose={() => setReceiptGig(null)} />}
-      {isFilterModalOpen && <FilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} onApply={(m, y) => { setFilterMonth(m); setFilterYear(y); setIsFilterModalOpen(false); }} onClear={() => { setFilterMonth(''); setFilterYear(''); setIsFilterModalOpen(false); }} initialMonth={filterMonth} initialYear={filterYear} />}
-      {isDeleteAllModalOpen && <DeleteAllModal isOpen={isDeleteAllModalOpen} onClose={() => setIsDeleteAllModalOpen(false)} onConfirm={() => { updateGigs([]); setIsDeleteAllModalOpen(false); }} />}
+      {receiptGig && <ReceiptModal gig={receiptGig} onClose={() => setReceiptGig(null)} currencySymbol={currency.symbol} language={settings.language} />}
+      {isFilterModalOpen && <FilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} onApply={(m, y) => { setFilterMonth(m); setFilterYear(y); setIsFilterModalOpen(false); }} onClear={() => { setFilterMonth(''); setFilterYear(''); setIsFilterModalOpen(false); }} initialMonth={filterMonth} initialYear={filterYear} language={settings.language} />}
+      {isDeleteAllModalOpen && <DeleteAllModal isOpen={isDeleteAllModalOpen} onClose={() => setIsDeleteAllModalOpen(false)} onConfirm={() => { updateGigs([]); setIsDeleteAllModalOpen(false); }} language={settings.language} />}
     </div>
   );
 };
