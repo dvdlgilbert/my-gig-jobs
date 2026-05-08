@@ -1,15 +1,72 @@
 import type { Language, Currency } from './types';
 
 export const currencies: Currency[] = [
+  // Americas
   { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' },
-  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
-  { code: 'MXN', symbol: '$', name: 'Mexican Peso' },
-  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
   { code: 'CAD', symbol: '$', name: 'Canadian Dollar' },
-  { code: 'AUD', symbol: '$', name: 'Australian Dollar' },
+  { code: 'MXN', symbol: '$', name: 'Mexican Peso' },
+  { code: 'ARS', symbol: '$', name: 'Argentine Peso' },
+  { code: 'BOB', symbol: 'Bs', name: 'Boliviano' },
+  { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+  { code: 'CLP', symbol: '$', name: 'Chilean Peso' },
+  { code: 'COP', symbol: '$', name: 'Colombian Peso' },
+  { code: 'CRC', symbol: '₡', name: 'Costa Rican Colón' },
+  { code: 'CUP', symbol: '$', name: 'Cuban Peso' },
+  { code: 'DOP', symbol: '$', name: 'Dominican Peso' },
+  { code: 'GTQ', symbol: 'Q', name: 'Guatemalan Quetzal' },
+  { code: 'HNL', symbol: 'L', name: 'Honduran Lempira' },
+  { code: 'NIO', symbol: 'C$', name: 'Nicaraguan Córdoba' },
+  { code: 'PAB', symbol: 'B/.', name: 'Panamanian Balboa' },
+  { code: 'PYG', symbol: '₲', name: 'Paraguayan Guaraní' },
+  { code: 'PEN', symbol: 'S/', name: 'Peruvian Sol' },
+  { code: 'UYU', symbol: '$', name: 'Uruguayan Peso' },
+  { code: 'VES', symbol: 'Bs.S', name: 'Venezuelan Bolívar' },
+  { code: 'BBD', symbol: '$', name: 'Barbadian Dollar' },
+  { code: 'BMD', symbol: '$', name: 'Bermudian Dollar' },
+  { code: 'BZD', symbol: '$', name: 'Belize Dollar' },
+  { code: 'GYD', symbol: '$', name: 'Guyanese Dollar' },
+  { code: 'JMD', symbol: '$', name: 'Jamaican Dollar' },
+  { code: 'TTD', symbol: '$', name: 'Trinidad and Tobago Dollar' },
+
+  // Europe
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound Sterling' },
   { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
+  { code: 'SEK', symbol: 'kr', name: 'Swedish Krona' },
+  { code: 'NOK', symbol: 'kr', name: 'Norwegian Krone' },
+  { code: 'DKK', symbol: 'kr', name: 'Danish Krone' },
+
+  // Africa
+  { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+  { code: 'NGN', symbol: '₦', name: 'Nigerian Naira' },
+  { code: 'KES', symbol: 'KSh', name: 'Kenyan Shilling' },
+  { code: 'GHS', symbol: 'GH₵', name: 'Ghanaian Cedi' },
+  { code: 'EGP', symbol: 'E£', name: 'Egyptian Pound' },
+  { code: 'TZS', symbol: 'TSh', name: 'Tanzanian Shilling' },
+  { code: 'UGX', symbol: 'USh', name: 'Ugandan Shilling' },
+
+  // Middle East
+  { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
+  { code: 'SAR', symbol: 'ر.س', name: 'Saudi Riyal' },
+  { code: 'QAR', symbol: 'ر.ق', name: 'Qatari Riyal' },
+  { code: 'KWD', symbol: 'د.ك', name: 'Kuwaiti Dinar' },
+  { code: 'BHD', symbol: '.د.ب', name: 'Bahraini Dinar' },
+  { code: 'OMR', symbol: 'ر.ع.', name: 'Omani Rial' },
+  { code: 'TRY', symbol: '₺', name: 'Turkish Lira' },
+
+  // Asia
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan (Renminbi)' },
+  { code: 'HKD', symbol: '$', name: 'Hong Kong Dollar' },
+  { code: 'TWD', symbol: 'NT$', name: 'New Taiwan Dollar' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+  { code: 'KRW', symbol: '₩', name: 'South Korean Won' },
+  { code: 'SGD', symbol: '$', name: 'Singapore Dollar' },
+  { code: 'MYR', symbol: 'RM', name: 'Malaysian Ringgit' },
+  { code: 'THB', symbol: '฿', name: 'Thai Baht' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'IDR', symbol: 'Rp', name: 'Indonesian Rupiah' },
+  { code: 'PHP', symbol: '₱', name: 'Philippine Peso' },
+  { code: 'VND', symbol: '₫', name: 'Vietnamese Dong' },
 ];
 
 export const translations = {
