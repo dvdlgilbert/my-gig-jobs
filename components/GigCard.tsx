@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import type { Gig } from '../types';
+import type { Gig, Language } from '../types';
+import { translations } from '../translations';
 import MoreVertIcon from './icons/MoreVertIcon';
 import PhoneIcon from './icons/PhoneIcon';
 import EmailIcon from './icons/EmailIcon';
@@ -14,6 +15,8 @@ interface GigCardProps {
   onManageExpenses: (gig: Gig) => void;
   onDelete: (gigId: string) => void;
   onShowReceipt: (gig: Gig) => void;
+  currencySymbol: string;
+  language: Language;
 }
 
 const InfoItem: React.FC<{ label: string; value?: string | number | null }> = ({ label, value }) => {
@@ -26,8 +29,9 @@ const InfoItem: React.FC<{ label: string; value?: string | number | null }> = ({
   );
 };
 
-const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onManageExpenses, onDelete, onShowReceipt }) => {
+const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onManageExpenses, onDelete, onShowReceipt, currencySymbol, language }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = translations[language];
 
   const getStatusStyle = (status: string) => {
     const base = { padding: '0.25rem 0.875rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' as const };
@@ -37,6 +41,16 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onManageExpenses, onDele
       case 'Working': return { ...base, backgroundColor: '#e0e7ff', color: '#3730a3' };
       case 'Complete': return { ...base, backgroundColor: '#dcfce7', color: '#166534' };
       default: return { ...base, backgroundColor: '#f3f4f6', color: '#1f2937' };
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'Scheduled': return t.statusScheduled;
+      case 'Pending': return t.statusPending;
+      case 'Working': return t.statusWorking;
+      case 'Complete': return t.statusComplete;
+      default: return status;
     }
   };
 
@@ -68,7 +82,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onManageExpenses, onDele
           <div style={{ flexGrow: 1, overflow: 'hidden' }}>
             <h3 style={{ fontSize: '1.1875rem', fontWeight: 800, color: '#111827', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{gig.jobTitle}</h3>
             <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0.25rem 0 0.75rem 0', fontWeight: 500 }}>{gig.clientName}</p>
-            <span style={getStatusStyle(gig.jobStatus)}>{gig.jobStatus}</span>
+            <span style={getStatusStyle(gig.jobStatus)}>{getStatusLabel(gig.jobStatus)}</span>
           </div>
           <div style={{ position: 'relative' }}>
             <button onClick={() => setMenuOpen(!menuOpen)} style={{ padding: '0.5rem', borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }} className="hover:bg-gray-100">
@@ -90,14 +104,14 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onManageExpenses, onDele
 
         <div style={{ marginTop: '1.25rem', borderTop: '1px solid #f3f4f6', paddingTop: '0.75rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <InfoItem label="Date" value={formatDate(gig.date)} />
-            <InfoItem label="Start Time" value={formatTime(gig.time)} />
+            <InfoItem label={t.date} value={formatDate(gig.date)} />
+            <InfoItem label={t.time} value={formatTime(gig.time)} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <InfoItem label="Labor" value={`$${(gig.jobCost || 0).toFixed(2)}`} />
-            <InfoItem label="Expenses" value={expensesTotal > 0 ? `$${expensesTotal.toFixed(2)}` : 'None'} />
+            <InfoItem label={t.laborCharge} value={`${currencySymbol}${(gig.jobCost || 0).toFixed(2)}`} />
+            <InfoItem label={t.expenses} value={expensesTotal > 0 ? `${currencySymbol}${expensesTotal.toFixed(2)}` : 'None'} />
           </div>
-          <InfoItem label="Job Site" value={gig.jobSite} />
+          <InfoItem label={t.jobSite} value={gig.jobSite} />
         </div>
       </div>
       
