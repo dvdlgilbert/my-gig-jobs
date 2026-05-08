@@ -23,3 +23,24 @@ export const saveGigs = (gigs: Gig[]): void => {
     console.error("Could not save gigs to localStorage", error);
   }
 };
+
+const SETTINGS_STORAGE_KEY = 'myGigsSettings';
+
+import type { UserSettings } from '../types';
+
+export const getSettings = (): UserSettings => {
+  try {
+    const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    return settingsJson ? JSON.parse(settingsJson) : { language: 'en', currencyCode: 'USD' };
+  } catch (error) {
+    return { language: 'en', currencyCode: 'USD' };
+  }
+};
+
+export const saveSettings = (settings: UserSettings): void => {
+  try {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.error("Could not save settings to localStorage", error);
+  }
+};
