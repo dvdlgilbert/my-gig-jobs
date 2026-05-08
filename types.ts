@@ -1,6 +1,19 @@
 
 export type GigStatus = 'Scheduled' | 'Pending' | 'Working' | 'Complete';
 
+export type Language = 'en' | 'es' | 'zh';
+
+export interface Currency {
+  code: string;
+  symbol: string;
+  name: string;
+}
+
+export interface UserSettings {
+  language: Language;
+  currencyCode: string;
+}
+
 export interface Expense {
   id: string;
   description: string;
