@@ -1,15 +1,19 @@
 
 import React, { useRef } from 'react';
 import html2canvas from 'html2canvas';
-import type { Gig } from '../types';
+import type { Gig, Language } from '../types';
+import { translations } from '../translations';
 
 interface ReceiptModalProps {
   gig: Gig;
   onClose: () => void;
+  currencySymbol: string;
+  language: Language;
 }
 
-const ReceiptModal: React.FC<receiptmodalprops> = ({ gig, onClose }) => {
-  const receiptRef = useRef<htmldivelement>(null);
+const ReceiptModal: React.FC<ReceiptModalProps> = ({ gig, onClose, currencySymbol, language }) => {
+  const receiptRef = useRef<HTMLDivElement>(null);
+  const t = translations[language];
 
   const laborCost = gig.jobCost || 0;
   const expensesTotal = (gig.expenses || []).reduce((sum, e) => sum + e.amount, 0);
@@ -29,83 +33,83 @@ const ReceiptModal: React.FC<receiptmodalprops> = ({ gig, onClose }) => {
   };
 
   return (
-    <div style="{{" position:="" 'fixed',="" inset:="" 0,="" backgroundcolor:="" 'rgba(0,0,0,0.85)',="" display:="" 'flex',="" alignitems:="" 'center',="" justifycontent:="" 'center',="" zindex:="" 100,="" padding:="" '1rem'="" }}="" onclick="{onClose}">
-      <div style="{{" backgroundcolor:="" 'white',="" maxwidth:="" '600px',="" width:="" '100%',="" borderradius:="" '1rem',="" overflow:="" 'hidden',="" boxshadow:="" '0="" 25px="" 50px="" -12px="" rgba(0,="" 0,="" 0,="" 0.5)'="" }}="" onclick="{e" ==""> e.stopPropagation()}>
-        <div style="{{" padding:="" '0',="" overflowy:="" 'auto',="" maxheight:="" '85vh'="" }}="">
-          <div ref="{receiptRef}" style="{{" padding:="" '2.5rem',="" color:="" '#111827',="" backgroundcolor:="" 'white'="" }}="">
-            <div style="{{" display:="" 'flex',="" justifycontent:="" 'space-between',="" alignitems:="" 'flex-start',="" borderbottom:="" '3px="" solid="" #111827',="" paddingbottom:="" '1.5rem',="" marginbottom:="" '2rem'="" }}="">
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }} onClick={onClose}>
+      <div style={{ backgroundColor: 'white', maxWidth: '600px', width: '100%', borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding: '0', overflowY: 'auto', maxHeight: '85vh' }}>
+          <div ref={receiptRef} style={{ padding: '2.5rem', color: '#111827', backgroundColor: 'white' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px solid #111827', paddingBottom: '1.5rem', marginBottom: '2rem' }}>
               <div>
-                <h1 style="{{" fontsize:="" '2.5rem',="" fontweight:="" 900,="" margin:="" 0,="" letterspacing:="" '-0.025em'="" }}="">RECEIPT</h1>
-                <p style="{{" color:="" '#6b7280',="" margin:="" '0.25rem="" 0="" 0="" 0',="" fontsize:="" '0.875rem'="" }}="">My GiG Jobs Official Document</p>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.025em' }}>{t.receipt.toUpperCase()}</h1>
+                <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0', fontSize: '0.875rem' }}>{t.appName} Official Document</p>
               </div>
-              <div style="{{" textalign:="" 'right'="" }}="">
-                <p style="{{" fontweight:="" 700,="" margin:="" 0="" }}="">Date: {new Date(gig.date.replace(/-/g, '/')).toLocaleDateString()}</p>
-                <p style="{{" fontsize:="" '0.75rem',="" color:="" '#9ca3af',="" margin:="" 0="" }}="">REF: {gig.id.substring(0,8).toUpperCase()}</p>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontWeight: 700, margin: 0 }}>{t.date}: {new Date(gig.date.replace(/-/g, '/')).toLocaleDateString()}</p>
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', margin: 0 }}>REF: {gig.id.substring(0,8).toUpperCase()}</p>
               </div>
             </div>
 
-            <div style="{{" marginbottom:="" '2rem'="" }}="">
-              <p style="{{" fontsize:="" '0.75rem',="" fontweight:="" 800,="" color:="" '#9ca3af',="" texttransform:="" 'uppercase',="" marginbottom:="" '0.5rem'="" }}="">Bill To:</p>
-              <h2 style="{{" fontsize:="" '1.25rem',="" fontweight:="" 800,="" margin:="" 0="" }}="">{gig.clientName}</h2>
-              <p style="{{" margin:="" '0.25rem="" 0'="" }}="">{gig.clientAddress}</p>
-              <p style="{{" margin:="" '0.25rem="" 0',="" fontsize:="" '0.875rem',="" color:="" '#4b5563'="" }}="">{gig.clientEmail}</p>
+            <div style={{ marginBottom: '2rem' }}>
+              <p style={{ fontSize: '0.75rem', fontWeight: 800, color: '#9ca3af', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{t.billTo}:</p>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>{gig.clientName}</h2>
+              <p style={{ margin: '0.25rem 0' }}>{gig.clientAddress}</p>
+              <p style={{ margin: '0.25rem 0', fontSize: '0.875rem', color: '#4b5563' }}>{gig.clientEmail}</p>
             </div>
 
-            <table style="{{" width:="" '100%',="" bordercollapse:="" 'collapse',="" marginbottom:="" '2rem'="" }}="">
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '2rem' }}>
               <thead>
-                <tr style="{{" borderbottom:="" '2px="" solid="" #e5e7eb',="" textalign:="" 'left',="" fontsize:="" '0.75rem',="" color:="" '#9ca3af',="" texttransform:="" 'uppercase'="" }}="">
-                  <th style="{{" padding:="" '0.75rem="" 0'="" }}="">Description</th>
-                  <th style="{{" padding:="" '0.75rem="" 0',="" textalign:="" 'right'="" }}="">Amount</th>
+                <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left', fontSize: '0.75rem', color: '#9ca3af', textTransform: 'uppercase' }}>
+                  <th style={{ padding: '0.75rem 0' }}>{t.description}</th>
+                  <th style={{ padding: '0.75rem 0', textAlign: 'right' }}>{t.amount}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr style="{{" borderbottom:="" '1px="" solid="" #f3f4f6'="" }}="">
-                  <td style="{{" padding:="" '1rem="" 0'="" }}="">
-                    <div style="{{" fontweight:="" 700="" }}="">{gig.jobTitle}</div>
+                <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+                  <td style={{ padding: '1rem 0' }}>
+                    <div style={{ fontWeight: 700 }}>{gig.jobTitle}</div>
                     {gig.description && (
-                      <div style="{{" fontsize:="" '0.875rem',="" color:="" '#4b5563',="" margintop:="" '0.25rem',="" whitespace:="" 'pre-wrap'="" }}="">
+                      <div style={{ fontSize: '0.875rem', color: '#4b5563', marginTop: '0.25rem', whiteSpace: 'pre-wrap' }}>
                         {gig.description}
                       </div>
                     )}
-                    <div style="{{" fontsize:="" '0.75rem',="" color:="" '#9ca3af',="" margintop:="" '0.5rem',="" fontstyle:="" 'italic'="" }}="">Service/Labor Fee</div>
+                    <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem', fontStyle: 'italic' }}>{t.laborCharge}</div>
                   </td>
-                  <td style="{{" padding:="" '1rem="" 0',="" textalign:="" 'right',="" fontweight:="" 700="" }}="">${laborCost.toFixed(2)}</td>
+                  <td style={{ padding: '1rem 0', textAlign: 'right', fontWeight: 700 }}>{currencySymbol}{laborCost.toFixed(2)}</td>
                 </tr>
                 {gig.expenses?.map(exp => (
-                  <tr key="{exp.id}" style="{{" borderbottom:="" '1px="" solid="" #f9fafb'="" }}="">
-                    <td style="{{" padding:="" '0.75rem="" 0',="" fontsize:="" '0.875rem'="" }}="">{exp.description}</td>
-                    <td style="{{" padding:="" '0.75rem="" 0',="" textalign:="" 'right',="" fontsize:="" '0.875rem'="" }}="">${exp.amount.toFixed(2)}</td>
+                  <tr key={exp.id} style={{ borderBottom: '1px solid #f9fafb' }}>
+                    <td style={{ padding: '0.75rem 0', fontSize: '0.875rem' }}>{exp.description}</td>
+                    <td style={{ padding: '0.75rem 0', textAlign: 'right', fontSize: '0.875rem' }}>{currencySymbol}{exp.amount.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <div style="{{" display:="" 'flex',="" justifycontent:="" 'flex-end'="" }}="">
-              <div style="{{" width:="" '240px'="" }}="">
-                <div style="{{" display:="" 'flex',="" justifycontent:="" 'space-between',="" padding:="" '0.5rem="" 0',="" color:="" '#4b5563'="" }}="">
-                  <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ width: '240px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', color: '#4b5563' }}>
+                  <span>{t.subtotal}</span>
+                  <span>{currencySymbol}{subtotal.toFixed(2)}</span>
                 </div>
-                <div style="{{" display:="" 'flex',="" justifycontent:="" 'space-between',="" padding:="" '0.5rem="" 0',="" color:="" '#4b5563'="" }}="">
-                  <span>Tax ({taxRate}%)</span>
-                  <span>${taxAmount.toFixed(2)}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', color: '#4b5563' }}>
+                  <span>{t.tax} ({taxRate}%)</span>
+                  <span>{currencySymbol}{taxAmount.toFixed(2)}</span>
                 </div>
-                <div style="{{" display:="" 'flex',="" justifycontent:="" 'space-between',="" padding:="" '1rem="" 0',="" bordertop:="" '2px="" solid="" #111827',="" fontweight:="" 900,="" fontsize:="" '1.5rem',="" margintop:="" '0.5rem'="" }}="">
-                  <span>TOTAL</span>
-                  <span>${total.toFixed(2)}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0', borderTop: '2px solid #111827', fontWeight: 900, fontSize: '1.5rem', marginTop: '0.5rem' }}>
+                  <span>{t.total.toUpperCase()}</span>
+                  <span>{currencySymbol}{total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
 
-            <footer style="{{" margintop:="" '4rem',="" textalign:="" 'center',="" fontsize:="" '0.75rem',="" color:="" '#9ca3af',="" bordertop:="" '1px="" dashed="" #e5e7eb',="" paddingtop:="" '1.5rem'="" }}="">
-              <p style="{{" margin:="" '0="" 0="" 0.5rem="" 0',="" fontweight:="" 600,="" color:="" '#4b5563'="" }}="">Thank you for your business!</p>
-              <p style="{{" margin:="" 0="" }}="">This receipt is a Gigs and Side Hustles generated form: Copyright (c) 2025</p>
+            <footer style={{ marginTop: '4rem', textAlign: 'center', fontSize: '0.75rem', color: '#9ca3af', borderTop: '1px dashed #e5e7eb', paddingTop: '1.5rem' }}>
+              <p style={{ margin: '0 0 0.5rem 0', fontWeight: 600, color: '#4b5563' }}>{t.thankYou}</p>
+              <p style={{ margin: 0 }}>This receipt is a Gigs and Side Hustles generated form: Copyright (c) 2025</p>
             </footer>
           </div>
         </div>
-        <div style="{{" padding:="" '1.25rem',="" bordertop:="" '1px="" solid="" #f3f4f6',="" display:="" 'flex',="" gap:="" '0.75rem',="" backgroundcolor:="" '#f9fafb'="" }}="">
-          <button onclick="{onClose}" style="{{" flexgrow:="" 1,="" padding:="" '0.875rem',="" borderradius:="" '0.75rem',="" border:="" '1px="" solid="" #d1d5db',="" backgroundcolor:="" 'white',="" fontweight:="" 600,="" cursor:="" 'pointer'="" }}="">Close</button>
-          <button onclick="{handleDownload}" style="{{" flexgrow:="" 1,="" backgroundcolor:="" '#9333ea',="" color:="" 'white',="" padding:="" '0.875rem',="" border:="" 'none',="" borderradius:="" '0.75rem',="" fontweight:="" 700,="" cursor:="" 'pointer',="" boxshadow:="" '0="" 4px="" 6px="" rgba(147,="" 51,="" 234,="" 0.2)'="" }}="">Save as Image</button>
+        <div style={{ padding: '1.25rem', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '0.75rem', backgroundColor: '#f9fafb' }}>
+          <button onClick={onClose} style={{ flexGrow: 1, padding: '0.875rem', borderRadius: '0.75rem', border: '1px solid #d1d5db', backgroundColor: 'white', fontWeight: 600, cursor: 'pointer' }}>{t.cancel}</button>
+          <button onClick={handleDownload} style={{ flexGrow: 1, backgroundColor: '#9333ea', color: 'white', padding: '0.875rem', border: 'none', borderRadius: '0.75rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 6px rgba(147, 51, 234, 0.2)' }}>{t.save}</button>
         </div>
       </div>
     </div>
