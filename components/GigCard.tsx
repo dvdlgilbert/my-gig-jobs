@@ -31,7 +31,7 @@ const InfoItem: React.FC<{ label: string; value?: string | number | null }> = ({
 
 const GigCard: React.FC<GigCardProps> = ({ gig, onEdit, onManageExpenses, onDelete, onShowReceipt, currencySymbol, language }) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const t = translations[language];
+  const t = translations[language] || translations.en;
 
   const getStatusStyle = (status: string) => {
     const base = { padding: '0.25rem 0.875rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' as const };
