@@ -16,6 +16,7 @@ import FilterIcon from './components/icons/FilterIcon';
 import TrashIcon from './components/icons/TrashIcon';
 import UploadIcon from './components/icons/UploadIcon';
 import DownloadIcon from './components/icons/DownloadIcon';
+import SettingsIcon from './components/icons/SettingsIcon';
 
 /**
  * App Component
@@ -176,7 +177,10 @@ const App: React.FC = () => {
       {view === 'list' && (
          <header style={{ backgroundColor: '#9333ea', color: 'white', padding: '1rem', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{t.appName}</h1>
+            <div>
+              <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>{t.appName}</h1>
+              <p style={{ fontSize: '0.625rem', opacity: 0.8, margin: 0 }}>v1.2.0</p>
+            </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexGrow: 1, justifyContent: 'flex-end' }}>
                 {/* Search Input */}
@@ -209,13 +213,11 @@ const App: React.FC = () => {
                         <button onClick={handleExportGigs} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
                           <DownloadIcon style={{ width: '20px' }} /> {t.exportGigs}
                         </button>
-                        <button onClick={() => { setIsFilterModalOpen(true); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
+                        <button onClick={() => { setIsFilterModalOpen(true); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem', transition: 'background-color 0.2s' }} className="hover:bg-gray-50">
                           <FilterIcon style={{ width: '20px' }} /> {t.filter}
                         </button>
-                        <hr style={{ margin: '0', border: '0', borderTop: '1px solid #f3f4f6' }} />
-                        <button onClick={() => { setView('settings'); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
-                          {/* Use settings icon or similar if available, or just text */}
-                          <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⚙️</div> {t.settings}
+                        <button onClick={() => { setView('settings'); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem', transition: 'background-color 0.2s' }} className="hover:bg-gray-50">
+                          <SettingsIcon style={{ width: '20px' }} /> {t.settings}
                         </button>
                         <hr style={{ margin: '0', border: '0', borderTop: '1px solid #f3f4f6' }} />
                         <button onClick={() => { setIsDeleteAllModalOpen(true); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#dc2626', fontSize: '0.875rem' }}>
