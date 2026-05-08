@@ -31,7 +31,12 @@ import type { UserSettings } from '../types';
 export const getSettings = (): UserSettings => {
   try {
     const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    return settingsJson ? JSON.parse(settingsJson) : { language: 'en', currencyCode: 'USD' };
+    if (!settingsJson) return { language: 'en', currencyCode: 'USD' };
+    const parsed = JSON.parse(settingsJson);
+    return {
+      language: parsed.language || 'en',
+      currencyCode: parsed.currencyCode || 'USD'
+    };
   } catch (error) {
     return { language: 'en', currencyCode: 'USD' };
   }
