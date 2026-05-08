@@ -1,5 +1,5 @@
 // FIX: Fix module resolution error by removing file extension.
-import type { Gig } from '../types';
+import type { Gig, UserSettings } from '../types';
 
 const GIGS_STORAGE_KEY = 'myGigsData';
 
@@ -25,8 +25,6 @@ export const saveGigs = (gigs: Gig[]): void => {
 };
 
 const SETTINGS_STORAGE_KEY = 'myGigsSettings';
-
-import type { UserSettings } from '../types';
 
 export const getSettings = (): UserSettings => {
   try {
