@@ -11,7 +11,7 @@ interface DeleteAllModalProps {
 
 const DeleteAllModal: React.FC<DeleteAllModalProps> = ({ isOpen, onClose, onConfirm, language }) => {
   if (!isOpen) return null;
-  const t = translations[language];
+  const t = translations[language] || translations.en;
 
   return (
     <div style={{
