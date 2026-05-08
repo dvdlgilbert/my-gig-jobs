@@ -50,7 +50,7 @@ const App: React.FC = () => {
     setSettings(getSettings());
   }, []);
 
-  const t = translations[settings.language];
+  const t = translations[settings.language] || translations.en;
   const currency = currencies.find(c => c.code === settings.currencyCode) || currencies[0];
 
   const handleUpdateSettings = (newSettings: UserSettings) => {
