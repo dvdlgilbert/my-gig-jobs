@@ -13,7 +13,7 @@ interface ReceiptModalProps {
 
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ gig, onClose, currencySymbol, language }) => {
   const receiptRef = useRef<HTMLDivElement>(null);
-  const t = translations[language];
+  const t = translations[language] || translations.en;
 
   const laborCost = gig.jobCost || 0;
   const expensesTotal = (gig.expenses || []).reduce((sum, e) => sum + e.amount, 0);
