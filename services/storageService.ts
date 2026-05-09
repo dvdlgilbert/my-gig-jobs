@@ -29,14 +29,15 @@ const SETTINGS_STORAGE_KEY = 'myGigsSettings';
 export const getSettings = (): UserSettings => {
   try {
     const settingsJson = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (!settingsJson) return { language: 'en', currencyCode: 'USD' };
+    if (!settingsJson) return { language: 'en', currencyCode: 'USD', isOnboarded: false };
     const parsed = JSON.parse(settingsJson);
     return {
       language: parsed.language || 'en',
-      currencyCode: parsed.currencyCode || 'USD'
+      currencyCode: parsed.currencyCode || 'USD',
+      isOnboarded: parsed.isOnboarded ?? true
     };
   } catch (error) {
-    return { language: 'en', currencyCode: 'USD' };
+    return { language: 'en', currencyCode: 'USD', isOnboarded: false };
   }
 };
 
