@@ -1,6 +1,7 @@
-My Gigs, (found on the Google Play Store), and a web-based version (found on the web at www.mygigsandsht.com) for any user with a web browser 
+My Gigs, (found on the Google Play Store), and a web-based version (found on the web at www.jobs.mygigsandsht.com) for any user with a web browser 
 with internet access. Examples of capabilities include, but are not limited to:
 
+• Multiple languages: English, Spanish and Chinese coupled with the selection of a preferred currency
 •	Create detailed records of GiG / Side Hustle Jobs work planned or performed
 •	Communicate directly with the client (Phone, SMS, and or Email)
 •	Determine multiple locations options for each job (client postal address and job site)
