@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { Language, UserSettings } from '../types';
 import { currencies, translations } from '../translations';
-import { motion } from 'framer-motion';
 
 interface OnboardingModalProps {
   onComplete: (settings: UserSettings) => void;
@@ -22,11 +21,42 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)', padding: '1rem' }}>
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        style={{ backgroundColor: 'white', borderRadius: '1rem', width: '100%', maxWidth: '500px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
+    <div style={{ 
+      position: 'fixed', 
+      inset: 0, 
+      zIndex: 100, 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+      backdropFilter: 'blur(4px)', 
+      padding: '1rem',
+    }}>
+      <style>{`
+        @keyframes modalEnter {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .onboarding-card {
+          animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
+      <div 
+        className="onboarding-card"
+        style={{ 
+          backgroundColor: 'white', 
+          borderRadius: '1rem', 
+          width: '100%', 
+          maxWidth: '500px', 
+          padding: '2rem', 
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        }}
       >
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ backgroundColor: '#f3e8ff', width: '64px', height: '64px', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#9333ea' }}>
@@ -120,7 +150,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
             {t.getStarted}
           </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
