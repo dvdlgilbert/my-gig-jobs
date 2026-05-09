@@ -131,6 +131,9 @@ export const translations = {
     confirmImport: 'Importing will add to your current records. Continue?',
     importSuccess: 'Gigs imported successfully!',
     importError: 'Failed to import. The file might be corrupted or in the wrong format.',
+    onboardingTitle: 'Welcome! Let\'s Get Started',
+    onboardingSub: 'Select your preferred language and currency to personalize your experience.',
+    getStarted: 'Get Started',
   },
   es: {
     appName: 'Mis Trabajos GiG',
@@ -193,6 +196,9 @@ export const translations = {
     confirmImport: 'La importación se agregará a sus registros actuales. ¿Continuar?',
     importSuccess: '¡Gigs importados con éxito!',
     importError: 'Error al importar. El archivo puede estar dañado o tener un formato incorrecto.',
+    onboardingTitle: '¡Bienvenido! Empecemos',
+    onboardingSub: 'Seleccione su idioma y moneda preferidos para personalizar su experiencia.',
+    getStarted: 'Empezar',
   },
   zh: {
     appName: '我的零工',
@@ -255,6 +261,9 @@ export const translations = {
     confirmImport: '导入将添加到您的当前记录中。是否继续？',
     importSuccess: '零工记录导入成功！',
     importError: '导入失败。文件可能已损坏或格式不正确。',
+    onboardingTitle: '欢迎！让我们开始吧',
+    onboardingSub: '选择您偏好的语言和货币以个性化您的体验。',
+    getStarted: '开始使用',
   }
 };
 
