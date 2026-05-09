@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Language, UserSettings } from '../types';
 import { currencies, translations } from '../translations';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 interface OnboardingModalProps {
   onComplete: (settings: UserSettings) => void;
