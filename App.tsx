@@ -9,6 +9,7 @@ import SettingsView from './components/SettingsView';
 import ReceiptModal from './components/ReceiptModal';
 import FilterModal from './components/FilterModal';
 import DeleteAllModal from './components/DeleteAllModal';
+import OnboardingModal from './components/OnboardingModal';
 import PlusIcon from './components/icons/PlusIcon';
 import SearchIcon from './components/icons/SearchIcon';
 import MoreVertIcon from './components/icons/MoreVertIcon';
@@ -31,7 +32,7 @@ type View = 'list' | 'form' | 'settings';
 const App: React.FC = () => {
   // --- State Management ---
   const [gigs, setGigs] = useState<Gig[]>([]);
-  const [settings, setSettings] = useState<UserSettings>({ language: 'en', currencyCode: 'USD' });
+  const [settings, setSettings] = useState<UserSettings>(() => getSettings());
   const [view, setView] = useState<View>('list');
   const [editingGig, setEditingGig] = useState<Gig | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,7 +49,6 @@ const App: React.FC = () => {
   // --- Persistence ---
   useEffect(() => {
     setGigs(getGigs());
-    setSettings(getSettings());
   }, []);
 
   const t = translations[settings.language] || translations.en;
@@ -289,6 +289,9 @@ const App: React.FC = () => {
       {receiptGig && <ReceiptModal gig={receiptGig} onClose={() => setReceiptGig(null)} currencySymbol={currency.symbol} language={settings.language} />}
       {isFilterModalOpen && <FilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} onApply={(m, y) => { setFilterMonth(m); setFilterYear(y); setIsFilterModalOpen(false); }} onClear={() => { setFilterMonth(''); setFilterYear(''); setIsFilterModalOpen(false); }} initialMonth={filterMonth} initialYear={filterYear} language={settings.language} />}
       {isDeleteAllModalOpen && <DeleteAllModal isOpen={isDeleteAllModalOpen} onClose={() => setIsDeleteAllModalOpen(false)} onConfirm={() => { updateGigs([]); setIsDeleteAllModalOpen(false); }} language={settings.language} />}
+      {!settings.isOnboarded && (
+        <OnboardingModal onComplete={handleUpdateSettings} />
+      )}
     </div>
   );
 };
