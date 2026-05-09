@@ -12,6 +12,7 @@ export interface Currency {
 export interface UserSettings {
   language: Language;
   currencyCode: string;
+  isOnboarded?: boolean;
 }
 
 export interface Expense {
