@@ -18,6 +18,11 @@ import TrashIcon from './components/icons/TrashIcon';
 import UploadIcon from './components/icons/UploadIcon';
 import DownloadIcon from './components/icons/DownloadIcon';
 import SettingsIcon from './components/icons/SettingsIcon';
+import ReportsIcon from './components/icons/ReportsIcon';
+import ReportsHub from './components/reports/ReportsHub';
+import ClientListReport from './components/reports/ClientListReport';
+import IncomeStatementReport from './components/reports/IncomeStatementReport';
+import CashFlowReport from './components/reports/CashFlowReport';
 
 /**
  * App Component
@@ -27,7 +32,15 @@ import SettingsIcon from './components/icons/SettingsIcon';
  * handles global search/filtering, and orchestrates data persistence.
  */
 
-type View = 'list' | 'form' | 'settings';
+type View = 
+  | 'list' 
+  | 'form' 
+  | 'settings' 
+  | 'reports-hub' 
+  | 'report-client-list' 
+  | 'report-income-statement' 
+  | 'report-cash-flow';
+
 
 const App: React.FC = () => {
   // --- State Management ---
@@ -179,7 +192,7 @@ const App: React.FC = () => {
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
             <div>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>{t.appName}</h1>
-              <p style={{ fontSize: '0.625rem', opacity: 0.8, margin: 0 }}>v1.2.0</p>
+              <p style={{ fontSize: '0.625rem', opacity: 0.8, margin: 0 }}>v2.0</p>
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexGrow: 1, justifyContent: 'flex-end' }}>
@@ -207,6 +220,9 @@ const App: React.FC = () => {
                     <>
                       <div onClick={() => setIsHeaderMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 15 }}></div>
                       <div style={{ position: 'absolute', right: 0, top: '100%', backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', zIndex: 20, width: '14rem', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                        <button onClick={() => { setView('reports-hub'); setIsHeaderMenuOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem', transition: 'background-color 0.2s' }} className="hover:bg-gray-50">
+                          <ReportsIcon style={{ width: '20px', color: '#9333ea' }} /> {t.reports}
+                        </button>
                         <button onClick={() => fileInputRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', color: '#374151', fontSize: '0.875rem' }}>
                           <UploadIcon style={{ width: '20px' }} /> {t.importGigs}
                         </button>
@@ -271,11 +287,42 @@ const App: React.FC = () => {
             onDelete={(id) => { handleDeleteGig(id); setView('list'); }}
             language={settings.language}
           />
-        ) : (
+        ) : view === 'settings' ? (
           <SettingsView 
             settings={settings}
             onUpdateSettings={handleUpdateSettings}
             onBack={() => setView('list')}
+          />
+        ) : view === 'reports-hub' ? (
+          <ReportsHub 
+            onSelectReport={(r) => {
+              if (r === 'client-list') setView('report-client-list');
+              else if (r === 'income-statement') setView('report-income-statement');
+              else if (r === 'cash-flow') setView('report-cash-flow');
+            }}
+            onBack={() => setView('list')}
+            language={settings.language}
+          />
+        ) : view === 'report-client-list' ? (
+          <ClientListReport 
+            gigs={gigs}
+            currencySymbol={currency.symbol}
+            language={settings.language}
+            onBack={() => setView('reports-hub')}
+          />
+        ) : view === 'report-income-statement' ? (
+          <IncomeStatementReport 
+            gigs={gigs}
+            currencySymbol={currency.symbol}
+            language={settings.language}
+            onBack={() => setView('reports-hub')}
+          />
+        ) : (
+          <CashFlowReport 
+            gigs={gigs}
+            currencySymbol={currency.symbol}
+            language={settings.language}
+            onBack={() => setView('reports-hub')}
           />
         )}
       </main>
