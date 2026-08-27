@@ -1,5 +1,6 @@
 {
   "name": "My GiG Jobs Tracker",
-  "description": "A web-based tool for small businesses, independent workers, and freelancers to create and manage records of their jobs. All data is stored locally on the user's device.",
-  "requestFramePermissions": []
+  "description": "A web-based tool for small businesses, independent workers, and freelancers to create and manage records of their jobs, with financial reporting and PDF sharing. All data is stored locally on the user's device.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

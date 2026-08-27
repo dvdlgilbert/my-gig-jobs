@@ -48,3 +48,28 @@ export const saveSettings = (settings: UserSettings): void => {
     console.error("Could not save settings to localStorage", error);
   }
 };
+
+const CASH_FLOW_STORAGE_KEY = 'myGigsCashFlowData';
+
+export const getCashFlowData = (periodKey: string): { salePurchaseAssets: number; netFinancing: number; cashStart: number } => {
+  try {
+    const raw = localStorage.getItem(CASH_FLOW_STORAGE_KEY);
+    if (!raw) return { salePurchaseAssets: 0, netFinancing: 0, cashStart: 0 };
+    const parsed = JSON.parse(raw);
+    return parsed[periodKey] || { salePurchaseAssets: 0, netFinancing: 0, cashStart: 0 };
+  } catch (error) {
+    console.error("Could not read cash flow data", error);
+    return { salePurchaseAssets: 0, netFinancing: 0, cashStart: 0 };
+  }
+};
+
+export const saveCashFlowData = (periodKey: string, data: { salePurchaseAssets: number; netFinancing: number; cashStart: number }): void => {
+  try {
+    const raw = localStorage.getItem(CASH_FLOW_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    parsed[periodKey] = data;
+    localStorage.setItem(CASH_FLOW_STORAGE_KEY, JSON.stringify(parsed));
+  } catch (error) {
+    console.error("Could not save cash flow data", error);
+  }
+};
