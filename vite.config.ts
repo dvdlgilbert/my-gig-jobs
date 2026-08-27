@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev
 export default defineConfig({
-  base: '/beta/', 
+  base: './', // <-- Change this to a period and a slash
   plugins: [react()],
   server: {
     host: '0.0.0.0',
