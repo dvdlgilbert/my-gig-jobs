@@ -30,10 +30,20 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
 
   // Modal editing state for investing / financing / start balance
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<'all' | 'investing' | 'financing' | 'start'>('all');
   const [manualData, setManualData] = useState<CashFlowData>({
-    salePurchaseAssets: 0,
-    netFinancing: 0,
+    saleOfAssets: 0,
+    purchaseOfAssets: 0,
+    netProceeds: 0,
+    repayments: 0,
     cashStart: 0,
+  });
+  const [tempData, setTempData] = useState({
+    saleOfAssets: '',
+    purchaseOfAssets: '',
+    netProceeds: '',
+    repayments: '',
+    cashStart: '',
   });
 
   const t = translations[language] || translations.en;
@@ -44,6 +54,24 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
     const data = getCashFlowData(periodKey);
     setManualData(data);
   }, [periodKey]);
+
+  const openEditModal = (section: 'all' | 'investing' | 'financing' | 'start' = 'all') => {
+    setActiveSection(section);
+    const sale = manualData.saleOfAssets ?? ((manualData.salePurchaseAssets && manualData.salePurchaseAssets > 0) ? manualData.salePurchaseAssets : 0);
+    const purchase = manualData.purchaseOfAssets ?? ((manualData.salePurchaseAssets && manualData.salePurchaseAssets < 0) ? Math.abs(manualData.salePurchaseAssets) : 0);
+    const proceeds = manualData.netProceeds ?? ((manualData.netFinancing && manualData.netFinancing > 0) ? manualData.netFinancing : 0);
+    const repays = manualData.repayments ?? ((manualData.netFinancing && manualData.netFinancing < 0) ? Math.abs(manualData.netFinancing) : 0);
+    const start = manualData.cashStart || 0;
+
+    setTempData({
+      saleOfAssets: sale === 0 ? '' : sale.toString(),
+      purchaseOfAssets: purchase === 0 ? '' : purchase.toString(),
+      netProceeds: proceeds === 0 ? '' : proceeds.toString(),
+      repayments: repays === 0 ? '' : repays.toString(),
+      cashStart: start === 0 ? '' : start.toString(),
+    });
+    setIsEditModalOpen(true);
+  };
 
   // Extract available years
   const availableYears = useMemo(() => {
@@ -121,11 +149,23 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
     // 1. Operating Activities
     const netCashOperating = cashReceivedFromClients - cashPaidForExpenses;
 
-    // 2. Investing Activities
-    const netCashInvesting = manualData.salePurchaseAssets || 0;
+    // 2. Investing Activities (2 lines: cash-in and cash-out)
+    const saleOfAssets = manualData.saleOfAssets ?? (
+      (manualData.salePurchaseAssets && manualData.salePurchaseAssets > 0) ? manualData.salePurchaseAssets : 0
+    );
+    const purchaseOfAssets = manualData.purchaseOfAssets ?? (
+      (manualData.salePurchaseAssets && manualData.salePurchaseAssets < 0) ? Math.abs(manualData.salePurchaseAssets) : 0
+    );
+    const netCashInvesting = saleOfAssets - purchaseOfAssets;
 
-    // 3. Financing Activities
-    const netCashFinancing = manualData.netFinancing || 0;
+    // 3. Financing Activities (2 lines: Net proceeds and Repayments)
+    const netProceeds = manualData.netProceeds ?? (
+      (manualData.netFinancing && manualData.netFinancing > 0) ? manualData.netFinancing : 0
+    );
+    const repayments = manualData.repayments ?? (
+      (manualData.netFinancing && manualData.netFinancing < 0) ? Math.abs(manualData.netFinancing) : 0
+    );
+    const netCashFinancing = netProceeds - repayments;
 
     // 4. Net Increase in Cash
     const netIncreaseInCash = netCashOperating + netCashInvesting + netCashFinancing;
@@ -140,7 +180,11 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
       cashReceivedFromClients,
       cashPaidForExpenses,
       netCashOperating,
+      saleOfAssets,
+      purchaseOfAssets,
       netCashInvesting,
+      netProceeds,
+      repayments,
       netCashFinancing,
       netIncreaseInCash,
       cashBalanceStart,
@@ -148,7 +192,23 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
     };
   }, [matchingGigs, manualData]);
 
-  const handleSaveManualData = (updated: CashFlowData) => {
+  const handleSaveModal = () => {
+    const sale = Math.abs(parseFloat(tempData.saleOfAssets) || 0);
+    const purchase = Math.abs(parseFloat(tempData.purchaseOfAssets) || 0);
+    const proceeds = Math.abs(parseFloat(tempData.netProceeds) || 0);
+    const repays = Math.abs(parseFloat(tempData.repayments) || 0);
+    const start = parseFloat(tempData.cashStart) || 0;
+
+    const updated: CashFlowData = {
+      saleOfAssets: sale,
+      purchaseOfAssets: purchase,
+      salePurchaseAssets: sale - purchase,
+      netProceeds: proceeds,
+      repayments: repays,
+      netFinancing: proceeds - repays,
+      cashStart: start,
+    };
+
     setManualData(updated);
     saveCashFlowData(periodKey, updated);
     setIsEditModalOpen(false);
@@ -362,7 +422,7 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
               {t.cashFlowInv}
             </span>
             <button
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={() => openEditModal('investing')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -384,8 +444,22 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
           </div>
           <div style={{ paddingLeft: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', color: '#374151', fontSize: '0.9375rem' }}>
-              <span>{t.salePurchaseAssets}</span>
-              <span style={{ fontWeight: 600 }}>{currencySymbol}{statementFigures.netCashInvesting.toFixed(2)}</span>
+              <span>{t.saleOfAssets}</span>
+              <span style={{ fontWeight: 600 }}>{currencySymbol}{statementFigures.saleOfAssets.toFixed(2)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', color: '#374151', fontSize: '0.9375rem' }}>
+              <span>{t.purchaseOfAssets}</span>
+              <span style={{ fontWeight: 600, color: statementFigures.purchaseOfAssets > 0 ? '#dc2626' : '#374151' }}>
+                ({currencySymbol}{statementFigures.purchaseOfAssets.toFixed(2)})
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.625rem 0', borderTop: '1px solid #f3f4f6', color: '#111827', fontSize: '0.9375rem', fontWeight: 700, marginTop: '0.25rem' }}>
+              <span>{t.netCashInv}</span>
+              <span style={{ color: statementFigures.netCashInvesting >= 0 ? '#059669' : '#dc2626' }}>
+                {statementFigures.netCashInvesting < 0
+                  ? `-${currencySymbol}${Math.abs(statementFigures.netCashInvesting).toFixed(2)}`
+                  : `${currencySymbol}${statementFigures.netCashInvesting.toFixed(2)}`}
+              </span>
             </div>
           </div>
         </div>
@@ -397,7 +471,7 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
               {t.cashFlowFin}
             </span>
             <button
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={() => openEditModal('financing')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -419,8 +493,22 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
           </div>
           <div style={{ paddingLeft: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', color: '#374151', fontSize: '0.9375rem' }}>
-              <span>{t.netProceedsRepayments}</span>
-              <span style={{ fontWeight: 600 }}>{currencySymbol}{statementFigures.netCashFinancing.toFixed(2)}</span>
+              <span>{t.netProceeds}</span>
+              <span style={{ fontWeight: 600 }}>{currencySymbol}{statementFigures.netProceeds.toFixed(2)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', color: '#374151', fontSize: '0.9375rem' }}>
+              <span>{t.repayments}</span>
+              <span style={{ fontWeight: 600, color: statementFigures.repayments > 0 ? '#dc2626' : '#374151' }}>
+                ({currencySymbol}{statementFigures.repayments.toFixed(2)})
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.625rem 0', borderTop: '1px solid #f3f4f6', color: '#111827', fontSize: '0.9375rem', fontWeight: 700, marginTop: '0.25rem' }}>
+              <span>{t.netCashFin}</span>
+              <span style={{ color: statementFigures.netCashFinancing >= 0 ? '#059669' : '#dc2626' }}>
+                {statementFigures.netCashFinancing < 0
+                  ? `-${currencySymbol}${Math.abs(statementFigures.netCashFinancing).toFixed(2)}`
+                  : `${currencySymbol}${statementFigures.netCashFinancing.toFixed(2)}`}
+              </span>
             </div>
           </div>
         </div>
@@ -431,7 +519,9 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '2rem', fontSize: '1.125rem', fontWeight: 800, color: '#111827' }}>
               <span>{t.netIncreaseCash}:</span>
               <span style={{ color: statementFigures.netIncreaseInCash >= 0 ? '#059669' : '#dc2626' }}>
-                {currencySymbol}{statementFigures.netIncreaseInCash.toFixed(2)}
+                {statementFigures.netIncreaseInCash < 0
+                  ? `-${currencySymbol}${Math.abs(statementFigures.netIncreaseInCash).toFixed(2)}`
+                  : `${currencySymbol}${statementFigures.netIncreaseInCash.toFixed(2)}`}
               </span>
             </div>
           </div>
@@ -445,7 +535,7 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
                 {t.cashBalanceStart}:
               </span>
               <button
-                onClick={() => setIsEditModalOpen(true)}
+                onClick={() => openEditModal('start')}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -477,7 +567,9 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '2rem', fontSize: '1.25rem', fontWeight: 900, color: '#111827' }}>
               <span>{t.cashBalanceEnd}:</span>
               <span style={{ color: statementFigures.cashBalanceEnd >= 0 ? '#059669' : '#dc2626' }}>
-                {currencySymbol}{statementFigures.cashBalanceEnd.toFixed(2)}
+                {statementFigures.cashBalanceEnd < 0
+                  ? `-${currencySymbol}${Math.abs(statementFigures.cashBalanceEnd).toFixed(2)}`
+                  : `${currencySymbol}${statementFigures.cashBalanceEnd.toFixed(2)}`}
               </span>
             </div>
           </div>
@@ -568,15 +660,19 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
           <div
             style={{
               backgroundColor: 'white',
-              maxWidth: '500px',
+              maxWidth: '540px',
               width: '100%',
               borderRadius: '1rem',
               overflow: 'hidden',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.15)',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Modal Header */}
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827', margin: 0 }}>
                   {t.editCashFlowValues}
@@ -593,100 +689,298 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
               </button>
             </div>
 
-            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {/* Sale/Purchase of Assets (Investing) */}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
-                  {t.salePurchaseAssets} (Investing)
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
-                    {currencySymbol}
-                  </span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={manualData.salePurchaseAssets}
-                    onChange={(e) => setManualData({ ...manualData, salePurchaseAssets: parseFloat(e.target.value) || 0 })}
-                    style={{
-                      width: '100%',
-                      paddingLeft: '2.25rem',
-                      paddingRight: '1rem',
-                      paddingTop: '0.625rem',
-                      paddingBottom: '0.625rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid #d1d5db',
-                      fontSize: '1rem',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Use positive for asset sales, negative for asset purchases.</span>
-              </div>
-
-              {/* Net proceeds/repayments (Financing) */}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
-                  {t.netProceedsRepayments} (Financing)
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
-                    {currencySymbol}
-                  </span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={manualData.netFinancing}
-                    onChange={(e) => setManualData({ ...manualData, netFinancing: parseFloat(e.target.value) || 0 })}
-                    style={{
-                      width: '100%',
-                      paddingLeft: '2.25rem',
-                      paddingRight: '1rem',
-                      paddingTop: '0.625rem',
-                      paddingBottom: '0.625rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid #d1d5db',
-                      fontSize: '1rem',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Use positive for capital loans/equity, negative for repayments.</span>
-              </div>
-
-              {/* Cash balance at start */}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
-                  {t.cashBalanceStart}
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
-                    {currencySymbol}
-                  </span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={manualData.cashStart}
-                    onChange={(e) => setManualData({ ...manualData, cashStart: parseFloat(e.target.value) || 0 })}
-                    style={{
-                      width: '100%',
-                      paddingLeft: '2.25rem',
-                      paddingRight: '1rem',
-                      paddingTop: '0.625rem',
-                      paddingBottom: '0.625rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid #d1d5db',
-                      fontSize: '1rem',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Starting liquid bank/cash balance at start of period.</span>
-              </div>
+            {/* Section Switcher Tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb', padding: '0.375rem 1rem', gap: '0.5rem', overflowX: 'auto' }}>
+              <button
+                type="button"
+                onClick={() => setActiveSection('all')}
+                style={{
+                  padding: '0.375rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: activeSection === 'all' ? '#9333ea' : 'transparent',
+                  color: activeSection === 'all' ? 'white' : '#4b5563',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {t.allSections}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection('investing')}
+                style={{
+                  padding: '0.375rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: activeSection === 'investing' ? '#9333ea' : 'transparent',
+                  color: activeSection === 'investing' ? 'white' : '#4b5563',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                2. Investing
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection('financing')}
+                style={{
+                  padding: '0.375rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: activeSection === 'financing' ? '#9333ea' : 'transparent',
+                  color: activeSection === 'financing' ? 'white' : '#4b5563',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                3. Financing
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection('start')}
+                style={{
+                  padding: '0.375rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: activeSection === 'start' ? '#9333ea' : 'transparent',
+                  color: activeSection === 'start' ? 'white' : '#4b5563',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                5. {t.cashBalanceStart}
+              </button>
             </div>
 
+            {/* Modal Body */}
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', overflowY: 'auto' }}>
+              {/* SECTION 2: Investing Activities */}
+              {(activeSection === 'all' || activeSection === 'investing') && (
+                <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '1rem', backgroundColor: '#faf5ff' }}>
+                  <div style={{ fontSize: '0.9375rem', fontWeight: 800, color: '#6b21a8', marginBottom: '0.875rem' }}>
+                    {t.cashFlowInv}
+                  </div>
+
+                  {/* Line 1: Sale of Assets (Cash-in +) */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
+                      <span>{t.saleOfAssetsInput}</span>
+                      <span style={{ color: '#059669', fontWeight: 800 }}>Cash In (+)</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
+                        {currencySymbol}
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={tempData.saleOfAssets}
+                        onChange={(e) => setTempData({ ...tempData, saleOfAssets: e.target.value })}
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.25rem',
+                          paddingRight: '1rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid #d1d5db',
+                          fontSize: '0.9375rem',
+                          outline: 'none',
+                          backgroundColor: 'white',
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: '#6b7280' }}>{t.saleOfAssetsHelp}</span>
+                  </div>
+
+                  {/* Line 2: Purchase of Assets (Cash-out -) */}
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
+                      <span>{t.purchaseOfAssetsInput}</span>
+                      <span style={{ color: '#dc2626', fontWeight: 800 }}>Cash Out (-)</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
+                        {currencySymbol}
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={tempData.purchaseOfAssets}
+                        onChange={(e) => setTempData({ ...tempData, purchaseOfAssets: e.target.value })}
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.25rem',
+                          paddingRight: '1rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid #d1d5db',
+                          fontSize: '0.9375rem',
+                          outline: 'none',
+                          backgroundColor: 'white',
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: '#6b7280' }}>{t.purchaseOfAssetsHelp}</span>
+                  </div>
+
+                  {/* Live Calculation Preview */}
+                  <div style={{ borderTop: '1px dashed #d8b4fe', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, color: '#4b5563' }}>
+                    <span>{t.netCashInv}:</span>
+                    <span style={{ color: (parseFloat(tempData.saleOfAssets || '0') - parseFloat(tempData.purchaseOfAssets || '0')) >= 0 ? '#059669' : '#dc2626' }}>
+                      {(parseFloat(tempData.saleOfAssets || '0') - parseFloat(tempData.purchaseOfAssets || '0')) < 0
+                        ? `-${currencySymbol}${Math.abs(parseFloat(tempData.saleOfAssets || '0') - parseFloat(tempData.purchaseOfAssets || '0')).toFixed(2)}`
+                        : `${currencySymbol}${(parseFloat(tempData.saleOfAssets || '0') - parseFloat(tempData.purchaseOfAssets || '0')).toFixed(2)}`}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* SECTION 3: Financing Activities */}
+              {(activeSection === 'all' || activeSection === 'financing') && (
+                <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '1rem', backgroundColor: '#f0fdf4' }}>
+                  <div style={{ fontSize: '0.9375rem', fontWeight: 800, color: '#166534', marginBottom: '0.875rem' }}>
+                    {t.cashFlowFin}
+                  </div>
+
+                  {/* Line 1: Net Proceeds (Cash-in +) */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
+                      <span>{t.netProceedsInput}</span>
+                      <span style={{ color: '#059669', fontWeight: 800 }}>Cash In (+)</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
+                        {currencySymbol}
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={tempData.netProceeds}
+                        onChange={(e) => setTempData({ ...tempData, netProceeds: e.target.value })}
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.25rem',
+                          paddingRight: '1rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid #d1d5db',
+                          fontSize: '0.9375rem',
+                          outline: 'none',
+                          backgroundColor: 'white',
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: '#6b7280' }}>{t.netProceedsHelp}</span>
+                  </div>
+
+                  {/* Line 2: Repayments (Cash-out -) */}
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
+                      <span>{t.repaymentsInput}</span>
+                      <span style={{ color: '#dc2626', fontWeight: 800 }}>Cash Out (-)</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
+                        {currencySymbol}
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={tempData.repayments}
+                        onChange={(e) => setTempData({ ...tempData, repayments: e.target.value })}
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.25rem',
+                          paddingRight: '1rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid #d1d5db',
+                          fontSize: '0.9375rem',
+                          outline: 'none',
+                          backgroundColor: 'white',
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: '#6b7280' }}>{t.repaymentsHelp}</span>
+                  </div>
+
+                  {/* Live Calculation Preview */}
+                  <div style={{ borderTop: '1px dashed #bbf7d0', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, color: '#4b5563' }}>
+                    <span>{t.netCashFin}:</span>
+                    <span style={{ color: (parseFloat(tempData.netProceeds || '0') - parseFloat(tempData.repayments || '0')) >= 0 ? '#059669' : '#dc2626' }}>
+                      {(parseFloat(tempData.netProceeds || '0') - parseFloat(tempData.repayments || '0')) < 0
+                        ? `-${currencySymbol}${Math.abs(parseFloat(tempData.netProceeds || '0') - parseFloat(tempData.repayments || '0')).toFixed(2)}`
+                        : `${currencySymbol}${(parseFloat(tempData.netProceeds || '0') - parseFloat(tempData.repayments || '0')).toFixed(2)}`}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* SECTION 5: Cash balance at start */}
+              {(activeSection === 'all' || activeSection === 'start') && (
+                <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '1rem', backgroundColor: '#f8fafc' }}>
+                  <div style={{ fontSize: '0.9375rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.875rem' }}>
+                    {t.cashBalanceStart}
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: '#374151', marginBottom: '0.375rem' }}>
+                      {t.cashBalanceStart}
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280', fontWeight: 700 }}>
+                        {currencySymbol}
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={tempData.cashStart}
+                        onChange={(e) => setTempData({ ...tempData, cashStart: e.target.value })}
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.25rem',
+                          paddingRight: '1rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          borderRadius: '0.5rem',
+                          border: '1px solid #d1d5db',
+                          fontSize: '0.9375rem',
+                          outline: 'none',
+                          backgroundColor: 'white',
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: '#6b7280' }}>{t.cashBalanceStartHelp}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
             <div style={{ padding: '1.25rem 1.5rem', backgroundColor: '#f9fafb', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
               <button
+                type="button"
                 onClick={() => setIsEditModalOpen(false)}
                 style={{
                   padding: '0.625rem 1.25rem',
@@ -702,7 +996,8 @@ const CashFlowReport: React.FC<CashFlowReportProps> = ({
                 {t.cancel}
               </button>
               <button
-                onClick={() => handleSaveManualData(manualData)}
+                type="button"
+                onClick={handleSaveModal}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
