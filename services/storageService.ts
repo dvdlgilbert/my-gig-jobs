@@ -1,5 +1,5 @@
 // FIX: Fix module resolution error by removing file extension.
-import type { Gig, UserSettings } from '../types';
+import type { Gig, UserSettings, CashFlowData } from '../types';
 
 const GIGS_STORAGE_KEY = 'myGigsData';
 
@@ -51,19 +51,55 @@ export const saveSettings = (settings: UserSettings): void => {
 
 const CASH_FLOW_STORAGE_KEY = 'myGigsCashFlowData';
 
-export const getCashFlowData = (periodKey: string): { salePurchaseAssets: number; netFinancing: number; cashStart: number } => {
+export const getCashFlowData = (periodKey: string): CashFlowData => {
   try {
     const raw = localStorage.getItem(CASH_FLOW_STORAGE_KEY);
-    if (!raw) return { salePurchaseAssets: 0, netFinancing: 0, cashStart: 0 };
+    if (!raw) {
+      return { saleOfAssets: 0, purchaseOfAssets: 0, netProceeds: 0, repayments: 0, cashStart: 0, salePurchaseAssets: 0, netFinancing: 0 };
+    }
     const parsed = JSON.parse(raw);
-    return parsed[periodKey] || { salePurchaseAssets: 0, netFinancing: 0, cashStart: 0 };
+    const item = parsed[periodKey] || {};
+
+    let saleOfAssets = item.saleOfAssets ?? 0;
+    let purchaseOfAssets = item.purchaseOfAssets ?? 0;
+    if (item.salePurchaseAssets !== undefined && item.saleOfAssets === undefined && item.purchaseOfAssets === undefined) {
+      if (item.salePurchaseAssets >= 0) {
+        saleOfAssets = item.salePurchaseAssets;
+        purchaseOfAssets = 0;
+      } else {
+        saleOfAssets = 0;
+        purchaseOfAssets = Math.abs(item.salePurchaseAssets);
+      }
+    }
+
+    let netProceeds = item.netProceeds ?? 0;
+    let repayments = item.repayments ?? 0;
+    if (item.netFinancing !== undefined && item.netProceeds === undefined && item.repayments === undefined) {
+      if (item.netFinancing >= 0) {
+        netProceeds = item.netFinancing;
+        repayments = 0;
+      } else {
+        netProceeds = 0;
+        repayments = Math.abs(item.netFinancing);
+      }
+    }
+
+    return {
+      saleOfAssets,
+      purchaseOfAssets,
+      salePurchaseAssets: saleOfAssets - purchaseOfAssets,
+      netProceeds,
+      repayments,
+      netFinancing: netProceeds - repayments,
+      cashStart: item.cashStart ?? 0,
+    };
   } catch (error) {
     console.error("Could not read cash flow data", error);
-    return { salePurchaseAssets: 0, netFinancing: 0, cashStart: 0 };
+    return { saleOfAssets: 0, purchaseOfAssets: 0, netProceeds: 0, repayments: 0, cashStart: 0, salePurchaseAssets: 0, netFinancing: 0 };
   }
 };
 
-export const saveCashFlowData = (periodKey: string, data: { salePurchaseAssets: number; netFinancing: number; cashStart: number }): void => {
+export const saveCashFlowData = (periodKey: string, data: CashFlowData): void => {
   try {
     const raw = localStorage.getItem(CASH_FLOW_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
