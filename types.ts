@@ -16,9 +16,15 @@ export interface UserSettings {
 }
 
 export interface CashFlowData {
-  salePurchaseAssets: number; // Investing activities
-  netFinancing: number;       // Financing activities
-  cashStart: number;          // Cash balance at start
+  saleOfAssets?: number;       // Section 2: Cash-in (+) line
+  purchaseOfAssets?: number;   // Section 2: Cash-out (-) line
+  salePurchaseAssets?: number; // Legacy total for investing
+
+  netProceeds?: number;        // Section 3: Proceeds (+) line
+  repayments?: number;         // Section 3: Repayments (-) line
+  netFinancing?: number;       // Legacy total for financing
+
+  cashStart: number;          // Section 5: Cash balance at start
 }
 
 export interface CashFlowStorage {
