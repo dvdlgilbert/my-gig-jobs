@@ -12,3 +12,11 @@ ReactDOM.createRoot(rootElement).render(
   </React.StrictMode>
 );
 
+// Register service worker AFTER React mounts
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/serviceworker.js')
+    .catch(err => console.error('Service worker registration failed:', err));
+}
+
+
