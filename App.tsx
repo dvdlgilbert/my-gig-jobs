@@ -184,6 +184,9 @@ const App: React.FC = () => {
 
   // --- Rendering ---
   return (
+    <>
+    <OnboardingModal lang={settings.language} />
+      
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb' }}>
       <style>{`.white-placeholder::placeholder { color: rgba(255, 255, 255, 0.75) !important; opacity: 1; }`}</style>
 
