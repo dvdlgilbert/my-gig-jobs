@@ -6,7 +6,7 @@ interface Props {
   lang: Language;
 }
 
-const InstallAppModal: React.FC<Props> = ({ lang }) => {
+const OnboardingModal: React.FC<Props> = ({ lang }) => {
   const t = useTranslation(lang);
 
   const [show, setShow] = useState(false);
@@ -98,6 +98,6 @@ const InstallAppModal: React.FC<Props> = ({ lang }) => {
   );
 };
 
-export default InstallAppModal;
+export default OnboardingModal;
 
 
