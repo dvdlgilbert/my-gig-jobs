@@ -250,6 +250,9 @@ const App: React.FC = () => {
           </div>
         </header>
       )}
+      </div>
+  </>
+);
 
       <main style={{ flexGrow: 1, padding: '1.5rem 1rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         {view === 'list' ? (
