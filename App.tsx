@@ -183,7 +183,8 @@ const App: React.FC = () => {
   }, [gigs, searchTerm, filterMonth, filterYear]);
 
   // --- Rendering ---
-return (
+const App = () => {
+  return (
   <>
     <OnboardingModal lang={settings.language} />
 
