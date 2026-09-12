@@ -220,6 +220,14 @@ export const translations = {
     saveChanges: 'Save Changes',
     allRecords: 'All Records',
     myGigsTitle: 'My GiGs',
+    installApp: "Install My Gigs",
+installAppDescription: "Install this app on your device for faster access and offline use.",
+installOnIOS: "On iPhone: Tap the Share button, then choose 'Add to Home Screen'.",
+installOnAndroid: "On Android: Tap the menu (⋮) and choose 'Install App'.",
+installOnDesktop: "On desktop: Click the install icon in your browser’s address bar.",
+installNow: "Install Now",
+later: "Maybe Later",
+
   },
   es: {
     appName: 'Mis Trabajos GiG',
@@ -371,6 +379,14 @@ export const translations = {
     saveChanges: 'Guardar Cambios',
     allRecords: 'Todos los Registros',
     myGigsTitle: 'Mis GiGs',
+  installApp: "Install My Gigs",
+installAppDescription: "Install this app on your device for faster access and offline use.",
+installOnIOS: "On iPhone: Tap the Share button, then choose 'Add to Home Screen'.",
+installOnAndroid: "On Android: Tap the menu (⋮) and choose 'Install App'.",
+installOnDesktop: "On desktop: Click the install icon in your browser’s address bar.",
+installNow: "Install Now",
+later: "Maybe Later",
+
   },
   zh: {
     appName: '我的零工',
@@ -522,6 +538,14 @@ export const translations = {
     saveChanges: '保存更改',
     allRecords: '全部记录',
     myGigsTitle: '我的零工',
+  installApp: "Install My Gigs",
+installAppDescription: "Install this app on your device for faster access and offline use.",
+installOnIOS: "On iPhone: Tap the Share button, then choose 'Add to Home Screen'.",
+installOnAndroid: "On Android: Tap the menu (⋮) and choose 'Install App'.",
+installOnDesktop: "On desktop: Click the install icon in your browser’s address bar.",
+installNow: "Install Now",
+later: "Maybe Later",
+
   }
 };
 
