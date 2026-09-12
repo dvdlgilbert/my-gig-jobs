@@ -344,10 +344,7 @@ return (
           language={settings.language}
         />
       )}
-
-      {!settings.isOnboarded && (
-        <OnboardingModal onComplete={handleUpdateSettings} />
-      )}
+  
     </div>
   </>
 );
