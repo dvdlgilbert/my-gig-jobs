@@ -2,10 +2,10 @@ import React from 'react';
 import type { Language } from '../../types';
 import { translations } from '../../translations';
 import ArrowLeftIcon from '../icons/ArrowLeftIcon';
-import { Users, TrendingUp, DollarSign } from 'lucide-react';
+import { Users, TrendingUp, DollarSign, Receipt } from 'lucide-react';
 
 interface ReportsHubProps {
-  onSelectReport: (report: 'client-list' | 'income-statement' | 'cash-flow') => void;
+  onSelectReport: (report: 'client-list' | 'income-statement' | 'expenses-statement' | 'cash-flow') => void;
   onBack: () => void;
   language: Language;
 }
@@ -35,6 +35,17 @@ const ReportsHub: React.FC<ReportsHubProps> = ({ onSelectReport, onBack, languag
       bgColor: '#ecfdf5',
       iconColor: '#059669',
       buttonBg: '#059669',
+    },
+    {
+      id: 'expenses-statement' as const,
+      title: t.expensesStatement,
+      description: t.expensesStatementDesc,
+      icon: Receipt,
+      badge: 'Cost Analysis',
+      badgeColor: '#e11d48',
+      bgColor: '#fff1f2',
+      iconColor: '#e11d48',
+      buttonBg: '#e11d48',
     },
     {
       id: 'cash-flow' as const,
