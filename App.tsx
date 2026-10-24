@@ -22,6 +22,7 @@ import ReportsIcon from './components/icons/ReportsIcon';
 import ReportsHub from './components/reports/ReportsHub';
 import ClientListReport from './components/reports/ClientListReport';
 import IncomeStatementReport from './components/reports/IncomeStatementReport';
+import ExpensesStatementReport from './components/reports/ExpensesStatementReport';
 import CashFlowReport from './components/reports/CashFlowReport';
 import SplashScreen from './components/SplashScreen';
 
@@ -40,6 +41,7 @@ type View =
   | 'reports-hub' 
   | 'report-client-list' 
   | 'report-income-statement' 
+  | 'report-expenses-statement' 
   | 'report-cash-flow';
 
 
@@ -300,6 +302,7 @@ const App: React.FC = () => {
             onSelectReport={(r) => {
               if (r === 'client-list') setView('report-client-list');
               else if (r === 'income-statement') setView('report-income-statement');
+              else if (r === 'expenses-statement') setView('report-expenses-statement');
               else if (r === 'cash-flow') setView('report-cash-flow');
             }}
             onBack={() => setView('list')}
@@ -314,6 +317,13 @@ const App: React.FC = () => {
           />
         ) : view === 'report-income-statement' ? (
           <IncomeStatementReport 
+            gigs={gigs}
+            currencySymbol={currency.symbol}
+            language={settings.language}
+            onBack={() => setView('reports-hub')}
+          />
+        ) : view === 'report-expenses-statement' ? (
+          <ExpensesStatementReport 
             gigs={gigs}
             currencySymbol={currency.symbol}
             language={settings.language}
